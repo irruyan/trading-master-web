@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#101a2e"/>
+  <rect x="92" y="150" width="328" height="30" rx="6" fill="#eaf0fb"/>
+  <text x="256" y="332" font-family="Georgia, 'Times New Roman', serif" font-size="220" font-weight="800" fill="#eaf0fb" text-anchor="middle">트</text>
+  <rect x="92" y="372" width="220" height="18" rx="5" fill="#8fd0b4"/>
+  <rect x="92" y="404" width="150" height="18" rx="5" fill="#5c6b80"/>
+</svg>

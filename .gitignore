@@ -1,0 +1,10 @@
+*.log
+build/
+__pycache__/
+.env
+*.png
+.openai/
+dist/legacy.html
+dist/api/portfolio.json
+dist/api/etf-portfolio.json
+dist/stocks.json
