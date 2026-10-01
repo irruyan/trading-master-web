@@ -12,7 +12,7 @@ const stock = {code:'000001', name:'검증 종목', entry_date:'2026-09-01', ent
 const summary = {open_count:1,closed_count:1,net_pnl_won:0,return_on_seed_pct:0,realized_won:0,unrealized_won:0,win_rate:100,avg_win_pct:3.2,avg_loss_pct:0};
 const account = {seed:1000,forward:{start_date:'2026-09-01',open:[stock],closed:[],summary}, historical:{summary:{closed_count:60,win_rate:100,realized_won:6000,profit_loss_ratio:null,profit_loss_ratio_status:'no_losing_trades'},coverage:{complete:true},all_time_summary:{closed_count:61,win_rate:50,realized_won:5980,pl_ratio:99}}};
 const payload = {meta:{generated_at:'2026-10-01 13:48:04'}, accounts:{ks_mid:account,kq_mid:structuredClone(account)}};
-const context = {payload,document:{getElementById:element,querySelector:()=>element('status')},window:{scrollTo(){}},location:{hash:''},URLSearchParams,console};
+const context = {payload,document:{getElementById:element,querySelector:()=>element('status')},window:{scrollTo(){},addEventListener(){}},location:{hash:''},URLSearchParams,console};
 vm.createContext(context);
 vm.runInContext(script,context);
 vm.runInContext('DATA=payload;renderStock("ks_mid","000001")',context);

@@ -1,6 +1,6 @@
 // 주식트레이딩마스터 — 최소 서비스워커 (PWA 설치/오프라인 셸)
 // 캐시 버전을 올리면 activate 시 옛 캐시를 자동 삭제 → 모든 사용자 브라우저가 새로 받음.
-const CACHE = 'tm-shell-v14';
+const CACHE = 'tm-shell-v15';
 const SHELL = ['./', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {

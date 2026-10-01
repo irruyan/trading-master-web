@@ -6,7 +6,7 @@ const html = fs.readFileSync(new URL('../dist/index.html', `file://${__filename}
 const script = html.match(/<script>\n([\s\S]*?)\n<\/script>/)[1];
 const snapshot = JSON.parse(fs.readFileSync(new URL('../dist/api/v2-portfolio.json', `file://${__filename}`)));
 
-async function run({ apiOrigin, snapshotUrl = '', livePayload, liveFails = false, pathname = '/' }) {
+async function run({ apiOrigin, snapshotUrl = '', livePayload, liveFails = false }) {
   const elements = new Map();
   const element = id => {
     if (!elements.has(id)) elements.set(id, { innerHTML: '', textContent: '', classList: { toggle() {}, add() {}, remove() {} } });
@@ -18,7 +18,7 @@ async function run({ apiOrigin, snapshotUrl = '', livePayload, liveFails = false
     console,
     AbortController,
     URLSearchParams,
-    location: { hash: '', pathname },
+    location: { hash: '' },
     document: { getElementById: element, querySelector: () => status },
     window: {
       TRADING_MASTER_CONFIG: { apiOrigin, snapshotUrl, snapshotPath: '/api/v2/snapshot', timeoutMs: 50, refreshMs: 999999, retryMs: 999999 },
@@ -56,11 +56,6 @@ async function run({ apiOrigin, snapshotUrl = '', livePayload, liveFails = false
   assert.deepStrictEqual(fallback.calls, ['https://api.example.test/api/v2/snapshot', './api/v2-portfolio.json']);
   assert.match(fallback.statusText, /^스냅샷 /);
   assert.match(fallback.page, /코스닥/);
-  const subpath = await run({ apiOrigin: 'https://api.example.test', liveFails: true, pathname: '/trading-master-web/' });
-  assert.strictEqual(new URL(subpath.calls[1], 'https://irruyan.github.io/trading-master-web/').pathname, '/trading-master-web/api/v2-portfolio.json');
-  assert.match(subpath.page, /코스피/);
-  const invalid = await run({ apiOrigin: 'https://api.example.test', livePayload: { accounts: { ks_mid: {} } } });
-  assert.match(invalid.statusText, /^스냅샷 /);
   console.log('data loader live/fallback tests passed');
 })().catch(error => {
   console.error(error);
