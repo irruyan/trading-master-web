@@ -78,92 +78,6 @@
             "exit_date": "2026-10-01"
           }
         },
-        "periods": {
-          "daily": [
-            {
-              "key": "2026-10-01",
-              "pnl_won": -3530679,
-              "count": 7,
-              "wins": 0,
-              "losses": 7,
-              "win_rate": 0,
-              "avg_win": 0,
-              "avg_loss": -8.45,
-              "pl_ratio": null,
-              "pl_ratio_status": "no_winning_trades"
-            },
-            {
-              "key": "2026-09-18",
-              "pnl_won": -190800,
-              "count": 1,
-              "wins": 0,
-              "losses": 1,
-              "win_rate": 0,
-              "avg_win": 0,
-              "avg_loss": -1.94,
-              "pl_ratio": null,
-              "pl_ratio_status": "no_winning_trades"
-            }
-          ],
-          "weekly": [
-            {
-              "key": "2026-W40",
-              "pnl_won": -3530679,
-              "count": 7,
-              "wins": 0,
-              "losses": 7,
-              "win_rate": 0,
-              "avg_win": 0,
-              "avg_loss": -8.45,
-              "pl_ratio": null,
-              "pl_ratio_status": "no_winning_trades"
-            },
-            {
-              "key": "2026-W38",
-              "pnl_won": -190800,
-              "count": 1,
-              "wins": 0,
-              "losses": 1,
-              "win_rate": 0,
-              "avg_win": 0,
-              "avg_loss": -1.94,
-              "pl_ratio": null,
-              "pl_ratio_status": "no_winning_trades"
-            }
-          ],
-          "monthly": [
-            {
-              "key": "2026-10",
-              "pnl_won": -3530679,
-              "count": 7,
-              "wins": 0,
-              "losses": 7,
-              "win_rate": 0,
-              "avg_win": 0,
-              "avg_loss": -8.45,
-              "pl_ratio": null,
-              "pl_ratio_status": "no_winning_trades"
-            },
-            {
-              "key": "2026-09",
-              "pnl_won": -190800,
-              "count": 1,
-              "wins": 0,
-              "losses": 1,
-              "win_rate": 0,
-              "avg_win": 0,
-              "avg_loss": -1.94,
-              "pl_ratio": null,
-              "pl_ratio_status": "no_winning_trades"
-            }
-          ]
-        },
-        "coverage": {
-          "complete": true,
-          "loaded_closed_count": 248,
-          "reported_all_time_closed_count": 248,
-          "oldest_loaded_exit_date": "2025-06-27"
-        },
         "open": [
           {
             "code": "000500",
@@ -23765,114 +23679,96 @@
               }
             ]
           }
-        ]
-      },
-      "historical": {
-        "mode": "backtest",
-        "summary": {
-          "closed_count": 240,
-          "open_count": 0,
-          "win_count": 86,
-          "loss_count": 154,
-          "win_rate": 36,
-          "avg_win_pct": 16.84,
-          "avg_loss_pct": -6.85,
-          "profit_loss_ratio": 2.46,
-          "profit_loss_ratio_status": "ok",
-          "realized_won": 52034451,
-          "unrealized_won": 0,
-          "net_pnl_won": 52034451,
-          "return_on_seed_pct": 104.07,
-          "best": {
-            "name": "LG이노텍",
-            "market": "KOSPI",
-            "pnl_pct": 123.8,
-            "pnl_won": 8223000,
-            "entry_date": "2026-04-01",
-            "exit_date": "2026-06-23"
-          },
-          "worst": {
-            "name": "한화비전",
-            "market": "KOSPI",
-            "pnl_pct": -23.41,
-            "pnl_won": -564200,
-            "entry_date": "2026-03-25",
-            "exit_date": "2026-03-31"
-          },
-          "max_profit": {
-            "name": "LG이노텍",
-            "market": "KOSPI",
-            "pnl_pct": 123.8,
-            "pnl_won": 8223000,
-            "entry_date": "2026-04-01",
-            "exit_date": "2026-06-23"
-          },
-          "max_loss": {
-            "name": "LG씨엔에스",
-            "market": "KOSPI",
-            "pnl_pct": -19.36,
-            "pnl_won": -1892184,
-            "entry_date": "2026-05-27",
-            "exit_date": "2026-06-10"
-          }
+        ],
+        "periods": {
+          "daily": [
+            {
+              "key": "2026-10-01",
+              "pnl_won": -3530679,
+              "count": 7,
+              "wins": 0,
+              "losses": 7,
+              "win_rate": 0,
+              "avg_win": 0,
+              "avg_loss": -8.45,
+              "pl_ratio": null,
+              "pl_ratio_status": "no_winning_trades"
+            },
+            {
+              "key": "2026-09-18",
+              "pnl_won": -190800,
+              "count": 1,
+              "wins": 0,
+              "losses": 1,
+              "win_rate": 0,
+              "avg_win": 0,
+              "avg_loss": -1.94,
+              "pl_ratio": null,
+              "pl_ratio_status": "no_winning_trades"
+            }
+          ],
+          "weekly": [
+            {
+              "key": "2026-W40",
+              "pnl_won": -3530679,
+              "count": 7,
+              "wins": 0,
+              "losses": 7,
+              "win_rate": 0,
+              "avg_win": 0,
+              "avg_loss": -8.45,
+              "pl_ratio": null,
+              "pl_ratio_status": "no_winning_trades"
+            },
+            {
+              "key": "2026-W38",
+              "pnl_won": -190800,
+              "count": 1,
+              "wins": 0,
+              "losses": 1,
+              "win_rate": 0,
+              "avg_win": 0,
+              "avg_loss": -1.94,
+              "pl_ratio": null,
+              "pl_ratio_status": "no_winning_trades"
+            }
+          ],
+          "monthly": [
+            {
+              "key": "2026-10",
+              "pnl_won": -3530679,
+              "count": 7,
+              "wins": 0,
+              "losses": 7,
+              "win_rate": 0,
+              "avg_win": 0,
+              "avg_loss": -8.45,
+              "pl_ratio": null,
+              "pl_ratio_status": "no_winning_trades"
+            },
+            {
+              "key": "2026-09",
+              "pnl_won": -190800,
+              "count": 1,
+              "wins": 0,
+              "losses": 1,
+              "win_rate": 0,
+              "avg_win": 0,
+              "avg_loss": -1.94,
+              "pl_ratio": null,
+              "pl_ratio_status": "no_winning_trades"
+            }
+          ]
         },
         "coverage": {
           "complete": true,
-          "loaded_closed_count": 240,
-          "reported_all_time_closed_count": 248
-        },
-        "all_time_summary": {
-          "open_count": 18,
-          "closed_count": 248,
-          "win_count": 86,
-          "loss_count": 162,
-          "win_rate": 35,
-          "avg_win": 16.84,
-          "avg_loss": -6.89,
-          "avg_realized": 1.34,
-          "avg_unrealized": 1.16,
-          "pl_ratio": 2.44,
-          "mdd": -4.44,
-          "realized_won": 48312972,
-          "unreal_won": -569584,
-          "best": {
-            "name": "LG이노텍",
-            "market": "KOSPI",
-            "pnl_pct": 123.8,
-            "pnl_won": 8223000,
-            "entry_date": "2026-04-01",
-            "exit_date": "2026-06-23",
-            "reason": "합산캔들 손절값 이탈 청산"
-          },
-          "worst": {
-            "name": "한화비전",
-            "market": "KOSPI",
-            "pnl_pct": -23.41,
-            "pnl_won": -564200,
-            "entry_date": "2026-03-25",
-            "exit_date": "2026-03-31",
-            "reason": "합산캔들 손절값 이탈 청산"
-          },
-          "max_profit": {
-            "name": "LG이노텍",
-            "market": "KOSPI",
-            "pnl_pct": 123.8,
-            "pnl_won": 8223000,
-            "entry_date": "2026-04-01",
-            "exit_date": "2026-06-23",
-            "reason": "합산캔들 손절값 이탈 청산"
-          },
-          "max_loss": {
-            "name": "LG씨엔에스",
-            "market": "KOSPI",
-            "pnl_pct": -19.36,
-            "pnl_won": -1892184,
-            "entry_date": "2026-05-27",
-            "exit_date": "2026-06-10",
-            "reason": "합산캔들 손절값 이탈 청산"
-          }
-        },
-        "notice": "과거 백테스트와 포워드 모의운용 성과는 합산하지 않습니다.",
+          "loaded_closed_count": 248,
+          "reported_all_time_closed_count": 248,
+          "oldest_loaded_exit_date": "2025-06-27"
+        }
+      },
+      "historical": {
+        "mode": "backtest",
         "available_closed": [
           {
             "code": "069960",
@@ -24577,7 +24473,129 @@
             "peak_pct": 5.26
           }
         ],
-        "legacy_open": []
+        "legacy_open": [],
+        "summary": {
+          "closed_count": 240,
+          "open_count": 0,
+          "win_count": 86,
+          "loss_count": 154,
+          "win_rate": 36,
+          "avg_win_pct": 16.84,
+          "avg_loss_pct": -6.85,
+          "profit_loss_ratio": 2.46,
+          "profit_loss_ratio_status": "ok",
+          "realized_won": 52034451,
+          "unrealized_won": 0,
+          "net_pnl_won": 52034451,
+          "return_on_seed_pct": 104.07,
+          "best": {
+            "name": "LG이노텍",
+            "market": "KOSPI",
+            "pnl_pct": 123.8,
+            "pnl_won": 8223000,
+            "entry_date": "2026-04-01",
+            "exit_date": "2026-06-23"
+          },
+          "worst": {
+            "name": "한화비전",
+            "market": "KOSPI",
+            "pnl_pct": -23.41,
+            "pnl_won": -564200,
+            "entry_date": "2026-03-25",
+            "exit_date": "2026-03-31"
+          },
+          "max_profit": {
+            "name": "LG이노텍",
+            "market": "KOSPI",
+            "pnl_pct": 123.8,
+            "pnl_won": 8223000,
+            "entry_date": "2026-04-01",
+            "exit_date": "2026-06-23"
+          },
+          "max_loss": {
+            "name": "LG씨엔에스",
+            "market": "KOSPI",
+            "pnl_pct": -19.36,
+            "pnl_won": -1892184,
+            "entry_date": "2026-05-27",
+            "exit_date": "2026-06-10"
+          }
+        },
+        "coverage": {
+          "complete": true,
+          "loaded_closed_count": 240,
+          "reported_all_time_closed_count": 248
+        },
+        "all_time_summary": {
+          "open_count": 18,
+          "closed_count": 248,
+          "win_count": 86,
+          "loss_count": 162,
+          "win_rate": 35,
+          "avg_win": 16.84,
+          "avg_loss": -6.89,
+          "avg_realized": 1.34,
+          "avg_unrealized": 1.16,
+          "pl_ratio": 2.44,
+          "mdd": -4.44,
+          "realized_won": 48312972,
+          "unreal_won": -569584,
+          "best": {
+            "name": "LG이노텍",
+            "market": "KOSPI",
+            "pnl_pct": 123.8,
+            "pnl_won": 8223000,
+            "entry_date": "2026-04-01",
+            "exit_date": "2026-06-23",
+            "reason": "합산캔들 손절값 이탈 청산"
+          },
+          "worst": {
+            "name": "한화비전",
+            "market": "KOSPI",
+            "pnl_pct": -23.41,
+            "pnl_won": -564200,
+            "entry_date": "2026-03-25",
+            "exit_date": "2026-03-31",
+            "reason": "합산캔들 손절값 이탈 청산"
+          },
+          "max_profit": {
+            "name": "LG이노텍",
+            "market": "KOSPI",
+            "pnl_pct": 123.8,
+            "pnl_won": 8223000,
+            "entry_date": "2026-04-01",
+            "exit_date": "2026-06-23",
+            "reason": "합산캔들 손절값 이탈 청산"
+          },
+          "max_loss": {
+            "name": "LG씨엔에스",
+            "market": "KOSPI",
+            "pnl_pct": -19.36,
+            "pnl_won": -1892184,
+            "entry_date": "2026-05-27",
+            "exit_date": "2026-06-10",
+            "reason": "합산캔들 손절값 이탈 청산"
+          }
+        },
+        "notice": "과거 백테스트와 포워드 모의운용 성과는 합산하지 않습니다."
+      },
+      "balance": {
+        "available": true,
+        "status": "ok",
+        "cash_won": 29876575,
+        "holdings_value_won": 67865820,
+        "account_value_won": 97742395,
+        "includes_backtest_capital": true
+      },
+      "equity_tracking": {
+        "available": true,
+        "status": "ok",
+        "baseline_at": "2026-10-01 13:48:04",
+        "baseline_value_won": 97742395,
+        "equity_change_won": 0,
+        "equity_change_pct": 0,
+        "basis": "verified_paper_equity_snapshot",
+        "cash_flow_adjustment": "not_available"
       }
     },
     "kq_mid": {
@@ -24634,56 +24652,6 @@
             "entry_date": "2026-09-18",
             "exit_date": "2026-10-01"
           }
-        },
-        "periods": {
-          "daily": [
-            {
-              "key": "2026-10-01",
-              "pnl_won": 31720,
-              "count": 1,
-              "wins": 1,
-              "losses": 0,
-              "win_rate": 100,
-              "avg_win": 3.2,
-              "avg_loss": 0,
-              "pl_ratio": null,
-              "pl_ratio_status": "no_losing_trades"
-            }
-          ],
-          "weekly": [
-            {
-              "key": "2026-W40",
-              "pnl_won": 31720,
-              "count": 1,
-              "wins": 1,
-              "losses": 0,
-              "win_rate": 100,
-              "avg_win": 3.2,
-              "avg_loss": 0,
-              "pl_ratio": null,
-              "pl_ratio_status": "no_losing_trades"
-            }
-          ],
-          "monthly": [
-            {
-              "key": "2026-10",
-              "pnl_won": 31720,
-              "count": 1,
-              "wins": 1,
-              "losses": 0,
-              "win_rate": 100,
-              "avg_win": 3.2,
-              "avg_loss": 0,
-              "pl_ratio": null,
-              "pl_ratio_status": "no_losing_trades"
-            }
-          ]
-        },
-        "coverage": {
-          "complete": true,
-          "loaded_closed_count": 240,
-          "reported_all_time_closed_count": 240,
-          "oldest_loaded_exit_date": "2025-06-30"
         },
         "open": [
           {
@@ -35010,114 +34978,60 @@
               }
             ]
           }
-        ]
-      },
-      "historical": {
-        "mode": "backtest",
-        "summary": {
-          "closed_count": 239,
-          "open_count": 0,
-          "win_count": 82,
-          "loss_count": 157,
-          "win_rate": 34,
-          "avg_win_pct": 17.53,
-          "avg_loss_pct": -7.62,
-          "profit_loss_ratio": 2.3,
-          "profit_loss_ratio_status": "ok",
-          "realized_won": 19420324,
-          "unrealized_won": 0,
-          "net_pnl_won": 19420324,
-          "return_on_seed_pct": 97.1,
-          "best": {
-            "name": "현대무벡스",
-            "market": "KOSDAQ",
-            "pnl_pct": 174.52,
-            "pnl_won": 5222128,
-            "entry_date": "2025-12-08",
-            "exit_date": "2026-02-09"
-          },
-          "worst": {
-            "name": "펄어비스",
-            "market": "KOSDAQ",
-            "pnl_pct": -24.65,
-            "pnl_won": -481600,
-            "entry_date": "2026-03-06",
-            "exit_date": "2026-03-19"
-          },
-          "max_profit": {
-            "name": "성호전자",
-            "market": "KOSDAQ",
-            "pnl_pct": 171.68,
-            "pnl_won": 6799513,
-            "entry_date": "2026-01-06",
-            "exit_date": "2026-03-19"
-          },
-          "max_loss": {
-            "name": "서진시스템",
-            "market": "KOSDAQ",
-            "pnl_pct": -21.21,
-            "pnl_won": -808833,
-            "entry_date": "2026-06-15",
-            "exit_date": "2026-06-23"
-          }
+        ],
+        "periods": {
+          "daily": [
+            {
+              "key": "2026-10-01",
+              "pnl_won": 31720,
+              "count": 1,
+              "wins": 1,
+              "losses": 0,
+              "win_rate": 100,
+              "avg_win": 3.2,
+              "avg_loss": 0,
+              "pl_ratio": null,
+              "pl_ratio_status": "no_losing_trades"
+            }
+          ],
+          "weekly": [
+            {
+              "key": "2026-W40",
+              "pnl_won": 31720,
+              "count": 1,
+              "wins": 1,
+              "losses": 0,
+              "win_rate": 100,
+              "avg_win": 3.2,
+              "avg_loss": 0,
+              "pl_ratio": null,
+              "pl_ratio_status": "no_losing_trades"
+            }
+          ],
+          "monthly": [
+            {
+              "key": "2026-10",
+              "pnl_won": 31720,
+              "count": 1,
+              "wins": 1,
+              "losses": 0,
+              "win_rate": 100,
+              "avg_win": 3.2,
+              "avg_loss": 0,
+              "pl_ratio": null,
+              "pl_ratio_status": "no_losing_trades"
+            }
+          ]
         },
         "coverage": {
           "complete": true,
-          "loaded_closed_count": 239,
-          "reported_all_time_closed_count": 240
-        },
-        "all_time_summary": {
-          "open_count": 24,
-          "closed_count": 240,
-          "win_count": 83,
-          "loss_count": 157,
-          "win_rate": 35,
-          "avg_win": 17.35,
-          "avg_loss": -7.62,
-          "avg_realized": 1.02,
-          "avg_unrealized": 5.15,
-          "pl_ratio": 2.28,
-          "mdd": 0,
-          "realized_won": 19452044,
-          "unreal_won": 1438754,
-          "best": {
-            "name": "현대무벡스",
-            "market": "KOSDAQ",
-            "pnl_pct": 174.52,
-            "pnl_won": 5222128,
-            "entry_date": "2025-12-08",
-            "exit_date": "2026-02-09",
-            "reason": "합산캔들 손절값 이탈 청산"
-          },
-          "worst": {
-            "name": "펄어비스",
-            "market": "KOSDAQ",
-            "pnl_pct": -24.65,
-            "pnl_won": -481600,
-            "entry_date": "2026-03-06",
-            "exit_date": "2026-03-19",
-            "reason": "합산캔들 손절값 이탈 청산"
-          },
-          "max_profit": {
-            "name": "성호전자",
-            "market": "KOSDAQ",
-            "pnl_pct": 171.68,
-            "pnl_won": 6799513,
-            "entry_date": "2026-01-06",
-            "exit_date": "2026-03-19",
-            "reason": "합산캔들 손절값 이탈 청산"
-          },
-          "max_loss": {
-            "name": "서진시스템",
-            "market": "KOSDAQ",
-            "pnl_pct": -21.21,
-            "pnl_won": -808833,
-            "entry_date": "2026-06-15",
-            "exit_date": "2026-06-23",
-            "reason": "합산캔들 손절값 이탈 청산"
-          }
-        },
-        "notice": "과거 백테스트와 포워드 모의운용 성과는 합산하지 않습니다.",
+          "loaded_closed_count": 240,
+          "reported_all_time_closed_count": 240,
+          "oldest_loaded_exit_date": "2025-06-30"
+        }
+      },
+      "historical": {
+        "mode": "backtest",
         "available_closed": [
           {
             "code": "089970",
@@ -35943,9 +35857,149 @@
             "peak_pct": 25.37
           }
         ],
-        "legacy_open": []
+        "legacy_open": [],
+        "summary": {
+          "closed_count": 239,
+          "open_count": 0,
+          "win_count": 82,
+          "loss_count": 157,
+          "win_rate": 34,
+          "avg_win_pct": 17.53,
+          "avg_loss_pct": -7.62,
+          "profit_loss_ratio": 2.3,
+          "profit_loss_ratio_status": "ok",
+          "realized_won": 19420324,
+          "unrealized_won": 0,
+          "net_pnl_won": 19420324,
+          "return_on_seed_pct": 97.1,
+          "best": {
+            "name": "현대무벡스",
+            "market": "KOSDAQ",
+            "pnl_pct": 174.52,
+            "pnl_won": 5222128,
+            "entry_date": "2025-12-08",
+            "exit_date": "2026-02-09"
+          },
+          "worst": {
+            "name": "펄어비스",
+            "market": "KOSDAQ",
+            "pnl_pct": -24.65,
+            "pnl_won": -481600,
+            "entry_date": "2026-03-06",
+            "exit_date": "2026-03-19"
+          },
+          "max_profit": {
+            "name": "성호전자",
+            "market": "KOSDAQ",
+            "pnl_pct": 171.68,
+            "pnl_won": 6799513,
+            "entry_date": "2026-01-06",
+            "exit_date": "2026-03-19"
+          },
+          "max_loss": {
+            "name": "서진시스템",
+            "market": "KOSDAQ",
+            "pnl_pct": -21.21,
+            "pnl_won": -808833,
+            "entry_date": "2026-06-15",
+            "exit_date": "2026-06-23"
+          }
+        },
+        "coverage": {
+          "complete": true,
+          "loaded_closed_count": 239,
+          "reported_all_time_closed_count": 240
+        },
+        "all_time_summary": {
+          "open_count": 24,
+          "closed_count": 240,
+          "win_count": 83,
+          "loss_count": 157,
+          "win_rate": 35,
+          "avg_win": 17.35,
+          "avg_loss": -7.62,
+          "avg_realized": 1.02,
+          "avg_unrealized": 5.15,
+          "pl_ratio": 2.28,
+          "mdd": 0,
+          "realized_won": 19452044,
+          "unreal_won": 1438754,
+          "best": {
+            "name": "현대무벡스",
+            "market": "KOSDAQ",
+            "pnl_pct": 174.52,
+            "pnl_won": 5222128,
+            "entry_date": "2025-12-08",
+            "exit_date": "2026-02-09",
+            "reason": "합산캔들 손절값 이탈 청산"
+          },
+          "worst": {
+            "name": "펄어비스",
+            "market": "KOSDAQ",
+            "pnl_pct": -24.65,
+            "pnl_won": -481600,
+            "entry_date": "2026-03-06",
+            "exit_date": "2026-03-19",
+            "reason": "합산캔들 손절값 이탈 청산"
+          },
+          "max_profit": {
+            "name": "성호전자",
+            "market": "KOSDAQ",
+            "pnl_pct": 171.68,
+            "pnl_won": 6799513,
+            "entry_date": "2026-01-06",
+            "exit_date": "2026-03-19",
+            "reason": "합산캔들 손절값 이탈 청산"
+          },
+          "max_loss": {
+            "name": "서진시스템",
+            "market": "KOSDAQ",
+            "pnl_pct": -21.21,
+            "pnl_won": -808833,
+            "entry_date": "2026-06-15",
+            "exit_date": "2026-06-23",
+            "reason": "합산캔들 손절값 이탈 청산"
+          }
+        },
+        "notice": "과거 백테스트와 포워드 모의운용 성과는 합산하지 않습니다."
+      },
+      "balance": {
+        "available": true,
+        "status": "ok",
+        "cash_won": 13418079,
+        "holdings_value_won": 27472940,
+        "account_value_won": 40891019,
+        "includes_backtest_capital": true
+      },
+      "equity_tracking": {
+        "available": true,
+        "status": "ok",
+        "baseline_at": "2026-10-01 13:48:04",
+        "baseline_value_won": 40891019,
+        "equity_change_won": 0,
+        "equity_change_pct": 0,
+        "basis": "verified_paper_equity_snapshot",
+        "cash_flow_adjustment": "not_available"
       }
     }
+  },
+  "combined_balance": {
+    "available": true,
+    "status": "ok",
+    "includes_backtest_capital": true,
+    "cash_won": 43294654,
+    "holdings_value_won": 95338760,
+    "account_value_won": 138633414
+  },
+  "combined_equity_tracking": {
+    "available": true,
+    "status": "ok",
+    "baseline_at": "2026-10-01 13:48:04",
+    "baseline_value_won": 138633414,
+    "equity_change_won": 0,
+    "equity_change_pct": 0,
+    "basis": "verified_paper_equity_snapshot",
+    "cash_flow_adjustment": "not_available"
   },
   "legacy_reference": {
     "backtest_seed_loaded": true,
