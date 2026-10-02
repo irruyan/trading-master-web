@@ -10,10 +10,20 @@ The KRX reference quote object is accepted separately from the engine portfolio 
 
 ## Interface and navigation
 
-The workspace has overview, KOSPI, KOSDAQ, and combined-performance routes. Desktop navigation stays in a side rail; smaller screens use a fixed bottom navigation.
+The default route is the KOSPI/KOSDAQ watchlist, with independent selection and
+paper-holding status, sorting, filters and observed changes. `/watch/{market}/{code}`
+contains selection evidence, observed prices, entry ceilings and the actual
+paper-account addition/exit rules. It supports stocks without a paper position.
+`/overview`, account and combined-performance routes retain the existing reports.
+Desktop navigation stays in a side rail; smaller screens use a fixed bottom navigation.
 
 Holdings and closed transactions link to separate transaction details. Closed lots have stable transaction keys, so a currently held position in the same stock cannot replace the selected closed record. Returning to a list or using browser history restores its tab and reading position. Background data refreshes preserve scroll, expanded explanations, and link focus. Older fallback snapshots do not replace newer displayed data.
 
-Presentation uses `dist/index.html` and `dist/app.css`. The runtime connection and all engine calculations remain unchanged.
+Presentation uses `dist/index.html` and `dist/app.css`. The runtime connection and
+all engine calculations remain unchanged. Watchlist and portfolio timestamps and
+cycle IDs must agree; mismatched refreshes are rejected without replacing the
+displayed pair. The bundled fallback now contains the full product snapshot.
+Candidate history starts at the observer's tracking start, not an inferred past
+selection date. Prices are Naver daily observations, not real-time order quotes.
 
-Run `node --test tests/data-loader.test.js tests/performance-display.test.js tests/navigation.test.js` for live/fallback loading, financial display, and navigation regression checks.
+Run `node --test tests/data-loader.test.js tests/performance-display.test.js tests/navigation.test.js tests/watchlist.test.js` for loading, financial display, navigation, same-cycle validation and actual watchlist routes.

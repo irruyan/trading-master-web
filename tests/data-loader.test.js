@@ -4,7 +4,8 @@ const vm = require('vm');
 
 const html = fs.readFileSync(new URL('../dist/index.html', `file://${__filename}`), 'utf8');
 const script = html.match(/<script>\n([\s\S]*?)\n<\/script>/)[1];
-const snapshot = JSON.parse(fs.readFileSync(new URL('../dist/api/v2-portfolio.json', `file://${__filename}`)));
+const bundle = JSON.parse(fs.readFileSync(new URL('../dist/api/v2-portfolio.json', `file://${__filename}`)));
+const snapshot = bundle.portfolio || bundle;
 
 async function run({ apiOrigin, snapshotUrl = '', livePayload, liveFails = false }) {
   const elements = new Map();
@@ -53,7 +54,7 @@ async function run({ apiOrigin, snapshotUrl = '', livePayload, liveFails = false
   assert.match(batch.statusText, /^운영 데이터 /);
 
   const fallback = await run({ apiOrigin: 'https://api.example.test', liveFails: true });
-  assert.deepStrictEqual(fallback.calls, ['https://api.example.test/api/v2/snapshot', './api/v2-portfolio.json']);
+  assert.deepStrictEqual(fallback.calls, ['https://api.example.test/api/v2/snapshot', '/api/v2-portfolio.json']);
   assert.match(fallback.statusText, /^스냅샷 /);
   assert.match(fallback.page, /코스닥/);
   console.log('data loader live/fallback tests passed');

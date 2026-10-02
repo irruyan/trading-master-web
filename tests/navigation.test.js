@@ -3,7 +3,8 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const html=fs.readFileSync(new URL('../dist/index.html','file://'+__filename),'utf8');
 const script=html.match(/<script>\n([\s\S]*?)\n<\/script>/)[1].replace("window.addEventListener('hashchange',render);loadData();",'');
-const payload=JSON.parse(fs.readFileSync(new URL('../dist/api/v2-portfolio.json','file://'+__filename),'utf8'));
+const bundle=JSON.parse(fs.readFileSync(new URL('../dist/api/v2-portfolio.json','file://'+__filename),'utf8'));
+const payload=bundle.portfolio||bundle;
 const original=JSON.stringify(payload),elements=new Map(),events=new Map(),clicks=new Map();
 const el=id=>{
  if(!elements.has(id))elements.set(id,{id,innerHTML:'',textContent:'',open:false,attrs:{},classes:new Set(),classList:{toggle(k,v){v?this.owner.classes.add(k):this.owner.classes.delete(k)},add(k){this.owner.classes.add(k)},remove(k){this.owner.classes.delete(k)}},setAttribute(k,v){this.attrs[k]=v},getAttribute(k){return this.attrs[k]},removeAttribute(k){delete this.attrs[k]},focus(){this.focused=true},querySelectorAll(){return []}});
@@ -83,7 +84,8 @@ for(const id of ['ks_mid','kq_mid']){
  }
 }
 run("go('/performance')");assert.match(page(),/종잣돈 대비 손익률/);routes++;
-run("go('/')");assert.match(page(),/현재 총자산/);routes++;
+run("go('/overview')");assert.match(page(),/현재 총자산/);routes++;
+run("go('/')");assert.match(page(),/관심종목/);routes++;
 assert.equal(JSON.stringify(payload),original,'navigation and rendering must not mutate financial data');
 assert.match(run("chartSvg([{d:'2026-10-01',p:100},{d:'2026-10-02',p:110,s:90}],100,90)"),/viewBox/);
 assert.doesNotMatch(run("chartSvg([{p:100},{p:110,s:90}],100,90)"),/NaN|undefined/);
