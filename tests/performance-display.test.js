@@ -62,3 +62,15 @@ vm.runInContext('renderPerformance()',context);
 assert.match(element('app').innerHTML,/종잣돈 대비 손익률/);
 assert.match(element('app').innerHTML,/기간 시작 잔고 대비 계좌 수익률과 구분/);
 console.log('performance display tests passed: stop boundary, separate history, ratio precision, actual balance, equity tracking and precise performance labels');
+
+stock.shares=248;stock.entry_price=30099;stock.current=30400;
+stock.cost_basis_won=7464500;stock.pnl_pct=1.00;
+vm.runInContext('renderAccount("ks_mid","hold")',context);
+assert.match(element('app').innerHTML,/74,700원/);
+assert.doesNotMatch(element('app').innerHTML,/74,648원/);
+vm.runInContext('renderStock("ks_mid","000001")',context);
+assert.match(element('app').innerHTML,/74,700원/);
+assert.match(element('app').innerHTML,/수수료·세금·슬리피지 미반영/);
+delete stock.cost_basis_won;
+assert.equal(vm.runInContext('holdingPnl(DATA.accounts.ks_mid.forward.open[0])',context),74648);
+console.log('exact book cost display and legacy fallback passed');
