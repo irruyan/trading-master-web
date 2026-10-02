@@ -39,7 +39,7 @@ assert.throws(()=>run("setData(bad,'live')"),/Invalid product/);
 assert.equal(run('WATCHLIST.cycle_id'),payload.watchlist.cycle_id);
 c.bad=structuredClone(payload);c.bad.watchlist.items.push(c.bad.watchlist.items[0]);
 assert.throws(()=>run("setData(bad,'live')"),/Invalid product/);
-c.old=structuredClone(payload);c.old.portfolio.meta.generated_at='2026-09-01 10:00:00';c.old.watchlist.generated_at=c.old.portfolio.meta.generated_at;
+c.old=structuredClone(payload);c.old.portfolio.meta.generated_at='2026-09-01 10:00:00';c.old.watchlist.generated_at=c.old.portfolio.meta.generated_at;for(const row of c.old.watchlist.items)delete row.analysis;
 run("setData(old,'snapshot')");assert.equal(run('WATCHLIST.generated_at'),payload.watchlist.generated_at);
 // Unheld candidates, failed observations and entry limits have distinct rendering.
 const row=structuredClone(payload.watchlist.items.find(x=>x.selected));row.position_status='not_held';delete row.position;row.plans.addition=null;row.plans.exit=null;c.row=row;
