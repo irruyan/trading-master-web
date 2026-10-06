@@ -17,6 +17,44 @@ function extendedSetup(){
  ctx.c.row={...ctx.c.payload.watchlist.items.find(x=>x.analysis?.status==='available'),...sample.items[0]};ctx.c.watch=sample;
  return ctx;
 }
+test('quote observation and completed candle basis remain distinct across all timeframes',()=>{
+ const {c,run,page}=extendedSetup();c.row.last_observed_at='2026-10-06 13:20:55';
+ const original=JSON.stringify(c.row);run('WATCHLIST.items=[row]');
+ for(const tf of ['day','week','month']){
+  c.tf=tf;run("renderWatchStock(row.market,row.code,new URLSearchParams({view:'structure',tf}))");
+  assert.ok(page().includes('2026-10-06 13:20 KST 관측'));
+  assert.ok(page().includes(run('FRAME_NAMES[tf]')+' 완성봉'));
+  assert.ok(page().includes(run('fmtDate(row.analysis.frames[tf].price_date)')));
+  assert.match(page(),/진행 봉 제외/);
+ }
+ assert.equal(JSON.stringify(c.row),original);
+ c.row.last_observed_at=null;
+ assert.match(run('quoteObservation(row)'),/관측 시각 확인 중/);
+ c.row.last_observed_at='invalid';assert.match(run('quoteObservation(row)'),/관측 시각 확인 중/);
+});
+test('old expired wave selection moves the chart window and current selection restores latest bars',()=>{
+ const {c,run}=extendedSetup();
+ const bars=Array.from({length:180},(_,i)=>{
+  const day=new Date(Date.UTC(2025,0,1+i)).toISOString().slice(0,10).replaceAll('-','');
+  return [day,100,120,90,110,1000];
+ });
+ const dead={id:bars[10][0],born_at:bars[10][0],confirmed_at:bars[11][0],
+  invalidated_at:bars[21][0],state:'invalidated',root_reference:95,
+  trajectory:bars.slice(10,21).map(b=>[b[0],105])};
+ c.dead=dead;
+ for(const tf of ['day','week','month']){
+  c.frame={timeframe:tf,bars,roots:[],half_wave:null,root_waves:{items:[dead]}};
+  const original=JSON.stringify(c.frame),past=run("candleChart(frame,'structure',dead)");
+  assert.ok(past.includes('data-wave-trajectory="'+dead.id+'"'));
+  assert.match(past,/선택한 소멸 파동 주변 구간/);
+  assert.ok(past.includes('2025.01.27'));
+  assert.ok(!past.includes('2025.06.29'));
+  const current=run("candleChart(frame,'structure',null)");
+  assert.ok(current.includes('2025.06.29'));
+  assert.doesNotMatch(current,/선택한 소멸 파동 주변 구간/);
+  assert.equal(JSON.stringify(c.frame),original);
+ }
+});
 test('selecting an expired wave preserves the open list, manual closure and scoped navigation',()=>{
  const {c,run,page,el,clicks,stack}=extendedSetup();
  // Simulate DOM replacement: new details elements begin closed, as in the browser.
