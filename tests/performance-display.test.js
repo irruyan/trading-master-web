@@ -74,3 +74,28 @@ assert.match(element('app').innerHTML,/수수료·세금·슬리피지 미반영
 delete stock.cost_basis_won;
 assert.equal(vm.runInContext('holdingPnl(DATA.accounts.ks_mid.forward.open[0])',context),74648);
 console.log('exact book cost display and legacy fallback passed');
+
+
+// The published opening-mark configuration must not mix legacy entry profits.
+const rebasedPayload=JSON.parse(fs.readFileSync(new URL('../dist/api/v2-portfolio.json', `file://${__filename}`)));
+context.rebasedPayload=rebasedPayload;
+vm.runInContext('DATA=rebasedPayload.portfolio;WATCHLIST=rebasedPayload.watchlist;REFERENCE_QUOTES=rebasedPayload.reference_quotes',context);
+for(const id of ['ks_mid','kq_mid']){
+  const a=rebasedPayload.portfolio.accounts[id],s=a.forward.summary;
+  assert.equal(a.seed,id==='ks_mid'?100000000:50000000);
+  assert.equal(s.net_pnl_won,a.balance.account_value_won-a.seed);
+  assert.equal(a.forward.start_at,'2026-10-01 13:48:04');
+  vm.runInContext(`renderAccount('${id}','performance')`,context);
+  assert.match(element('app').innerHTML,/기간 수익률/);
+  assert.match(element('app').innerHTML,/시작 원금/);
+  assert.match(element('app').innerHTML,/2026-10-01 13:48 KST/);
+  assert.doesNotMatch(element('app').innerHTML,/<summary>과거 백테스트 기록/);
+  assert.match(element('app').innerHTML,/원가 정산 조정/);
+}
+vm.runInContext('renderPerformance()',context);
+assert.match(element('app').innerHTML,/기간손익 합계/);
+assert.doesNotMatch(element('app').innerHTML,/백테스트에서 이어진 모의자산 포함|기간 시작 잔고 대비 계좌 수익률과 구분/);
+context.window.TRADING_MASTER_CONFIG={capitalRebaseId:'20261001-opening-100m-50m'};
+assert.equal(vm.runInContext('validPortfolio(rebasedPayload.portfolio)',context),true);
+assert.equal(vm.runInContext('validPortfolio(payload)',context),false);
+console.log('opening capital, period profits, private history exclusion, cost adjustment and stale configuration rejection passed');

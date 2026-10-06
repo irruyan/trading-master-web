@@ -135,7 +135,7 @@ test('tab and timeframe changes preserve history parent, reading position, and l
  const parent=stack.at(-1).state.parent,size=stack.length;const target=run("stockControlPath(row,parseRoute().query,'structure','week')");
  let prevented=false;const anchor={getAttribute:k=>k==='href'?'#'+target:null,hasAttribute:k=>k==='data-stock-control'};
  clicks.get('click')({button:0,preventDefault(){prevented=true},target:{closest(selector){return selector==='a[href]'?anchor:null}}});assert.equal(prevented,true);
- assert.match(page(),/뿌리·파동 절반/);assert.match(page(),/주봉 완성봉/);assert.equal(c.window.scrollY,180);assert.equal(stack.length,size);assert.equal(stack.at(-1).state.parent,parent);
+ assert.match(page(),/뿌리·(?:파동 절반|매수 파동)/);assert.match(page(),/주봉 완성봉/);assert.equal(c.window.scrollY,180);assert.equal(stack.length,size);assert.equal(stack.at(-1).state.parent,parent);
  run("setData(payload,'live')");assert.equal(c.window.scrollY,180);assert.equal(run('stockFrame(parseRoute().query)'),'week');
  run('go(list,{restore:true})');assert.equal(backs(),1);assert.equal(c.window.scrollY,440);assert.equal(c.location.hash,'#'+list);
 });
@@ -166,7 +166,7 @@ test('current diagnosis and completed structure keep distinct price dates and ex
  d.price=d.levels.max_buy;c.row.price=d.price;d.gates.within_daily_ceiling=true;d.gates.above_daily_stop=d.price>d.levels.stop;d.diagnostic_state=!d.gates.above_daily_stop||d.price<d.levels.gijunga_min?'risk':d.gates.reference_rising&&d.gates.buy_signal?'candidate':'observe';
  assert.equal(run('validStockAnalysis(row.analysis,row,payload.watchlist)'),true);assert.match(run('diagnosticPlan(row)'),/상단 이내 관측/);
  d.price=d.levels.stop;c.row.price=d.price;d.gates.above_daily_stop=false;d.gates.within_daily_ceiling=d.price<=d.levels.max_buy;d.diagnostic_state='risk';assert.equal(run('validStockAnalysis(row.analysis,row,payload.watchlist)'),true);assert.match(run('diagnosticPlan(row)'),/손절값 이하 관측/);
- assert.match(run("structurePanel(row,new URLSearchParams())"),/완성봉 종가.*이하/);assert.match(run("structurePanel(row,new URLSearchParams())"),/완성봉 저가.*이하/);
+ assert.match(run("structurePanel(row,new URLSearchParams())"),f.root_waves?/뿌리 기준 이하로 마감한 완성봉/:/완성봉 종가.*이하/);assert.match(run("structurePanel(row,new URLSearchParams())"),f.root_waves?/저가 꼬리/:/완성봉 저가.*이하/);
 });
 test('account detail can open current analysis and restore its exact holding',()=>{
  const {c,run,page}=setup();const row=c.payload.watchlist.items.find(x=>x.position_status==='held');c.row=row;const open=c.payload.portfolio.accounts[row.account_id].forward.open.find(x=>x.code===row.code);c.open=open;
@@ -177,6 +177,7 @@ test('account detail can open current analysis and restore its exact holding',()
 
 test('a failed timeframe never hides verified daily diagnosis or publishes usable frame values',()=>{
  const {c,run}=setup();c.row=c.payload.watchlist.items.find(x=>x.analysis?.status==='available');const f=c.row.analysis.frames.week;
+ if(f.root_waves)f.root_waves={version:'root-linked-wave-v1',execution_policy:'display_only',status:'unavailable',items:[],representative_id:null};
  Object.assign(f,{status:'unavailable',bars_count:0,period_start:null,price_date:null,price:null,roots:[],half_wave:null,bars:[],war:{status:'insufficient_history'}});
  assert.equal(run('validStockAnalysis(row.analysis,row,payload.watchlist)'),true);
  assert.match(run('diagnosticPlan(row)'),/일봉 관측/);

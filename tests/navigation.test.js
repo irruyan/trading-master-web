@@ -83,7 +83,7 @@ for(const id of ['ks_mid','kq_mid']){
   for(const row of rows){c.row=row;c.id=id;c.closedFlag=type==='closed';run("go(stockPath(row,id,accountPath(id,closedFlag?'closed':'hold'),closedFlag))");assert.doesNotMatch(page(),/NaN|undefined|이 거래 기록을 찾을/);assert.match(page(),type==='open'?/보유 중/:/청산 기록/);routes++}
  }
 }
-run("go('/performance')");assert.match(page(),/종잣돈 대비 손익률/);routes++;
+run("go('/performance')");assert.match(page(),payload.meta.backtest_excluded?/기간 수익률/:/종잣돈 대비 손익률/);routes++;
 run("go('/overview')");assert.match(page(),/현재 총자산/);routes++;
 run("go('/')");assert.match(page(),/관심종목/);routes++;
 assert.equal(JSON.stringify(payload),original,'navigation and rendering must not mutate financial data');
