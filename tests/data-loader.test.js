@@ -46,16 +46,16 @@ async function run({ apiOrigin, snapshotUrl = '', livePayload, liveFails = false
 (async () => {
   const live = await run({ apiOrigin: 'https://api.example.test/', livePayload: { portfolio: snapshot, reference_quotes: { '005930': { close: 100 } } } });
   assert.deepStrictEqual(live.calls, ['https://api.example.test/api/v2/snapshot']);
-  assert.match(live.statusText, /^운영 데이터 /);
+  assert.match(live.statusText, /^기준 시각 /);
   assert.match(live.page, /코스피/);
 
   const batch = await run({ snapshotUrl: 'https://data.example.test/v2-snapshot.json', livePayload: { portfolio: snapshot } });
   assert.deepStrictEqual(batch.calls, ['https://data.example.test/v2-snapshot.json']);
-  assert.match(batch.statusText, /^운영 데이터 /);
+  assert.match(batch.statusText, /^기준 시각 /);
 
   const fallback = await run({ apiOrigin: 'https://api.example.test', liveFails: true });
   assert.deepStrictEqual(fallback.calls, ['https://api.example.test/api/v2/snapshot', '/api/v2-portfolio.json']);
-  assert.match(fallback.statusText, /^스냅샷 /);
+  assert.match(fallback.statusText, /^최근 데이터 /);
   assert.match(fallback.page, /코스닥/);
   console.log('data loader live/fallback tests passed');
 })().catch(error => {

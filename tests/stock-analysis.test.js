@@ -95,7 +95,7 @@ test('new root wave view renders exact trajectory, keeps history selection and s
  const {c,run}=extendedSetup(),f=c.row.analysis.frames.day,m=f.root_waves;c.frame=f;
  assert.equal(run('validStockAnalysis(row.analysis,row,watch)'),true);
  const html=run('structurePanel(row,new URLSearchParams())');
- assert.match(html,/뿌리·매수 파동/);assert.match(html,/중심 위에서 유지/);assert.equal(m.representative_id,'20260113');assert.match(html,/파동 중심 궤적/);assert.match(html,/소멸 이력/);assert.match(html,/고저점 절반 구조 · 기존 보조 지표/);
+ assert.match(html,/뿌리·매수 파동/);assert.match(html,/중심 위에서 유지/);assert.equal(m.representative_id,'20260113');assert.match(html,/파동 중심 궤적/);assert.match(html,/소멸 이력/);assert.match(html,/고저점 절반 구조 · 보조 지표/);
  assert.doesNotMatch(html,/NaN|undefined|6\.2%|절반 익절|C=|H=|L=/);
  const w=m.items[0];c.chosen=w;
  const selected=run("structurePanel(row,new URLSearchParams({wave:chosen.id}))");

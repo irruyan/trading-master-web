@@ -48,11 +48,11 @@ vm.runInContext('renderAccount("ks_mid","hold")',context);
 assert.match(element('app').innerHTML,/현재 총자산/);
 assert.match(element('app').innerHTML,/1,200원/);
 assert.match(element('app').innerHTML,/700원/);
-assert.match(element('app').innerHTML,/포워드 거래손익/);
+assert.match(element('app').innerHTML,/기간손익/);
 assert.match(element('app').innerHTML,/종잣돈 대비 손익률/);
 assert.doesNotMatch(element('app').innerHTML,/<span>계좌 손익<\/span>/);
 assert.match(element('app').innerHTML,/자산 변동 \+200원 \(\+20\.00%\)/);
-assert.match(element('app').innerHTML,/입출금 조정 전/);
+assert.match(element('app').innerHTML,/기준일 2026-10-01 13:48 KST/);
 assert.match(vm.runInContext('trackingSummary({available:false})',context),/기준을 확인 중/);
 assert.doesNotMatch(vm.runInContext('trackingSummary({available:false})',context),/0원|0\.00%/);
 vm.runInContext('renderHome()',context);
@@ -60,7 +60,7 @@ assert.match(element('app').innerHTML,/<div class="overview-label">현재 총자
 assert.match(element('app').innerHTML,/1,200원/);
 vm.runInContext('renderPerformance()',context);
 assert.match(element('app').innerHTML,/종잣돈 대비 손익률/);
-assert.match(element('app').innerHTML,/기간 시작 잔고 대비 계좌 수익률과 구분/);
+assert.match(element('app').innerHTML,/기간 수익률 = 기간손익 ÷ 시작 원금 × 100/);
 console.log('performance display tests passed: stop boundary, separate history, ratio precision, actual balance, equity tracking and precise performance labels');
 
 stock.shares=248;stock.entry_price=30099;stock.current=30400;
@@ -90,7 +90,7 @@ for(const id of ['ks_mid','kq_mid']){
   assert.match(element('app').innerHTML,/시작 원금/);
   assert.match(element('app').innerHTML,/2026-10-01 13:48 KST/);
   assert.doesNotMatch(element('app').innerHTML,/<summary>과거 백테스트 기록/);
-  assert.match(element('app').innerHTML,/원가 정산 조정/);
+  assert.doesNotMatch(element('app').innerHTML,/백테스트|이전 손익|원가 정산|원가 반올림|매매 기록은 보존|승계/);
 }
 vm.runInContext('renderPerformance()',context);
 assert.match(element('app').innerHTML,/기간손익 합계/);
