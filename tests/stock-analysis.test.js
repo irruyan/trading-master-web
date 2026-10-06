@@ -12,6 +12,36 @@ function setup(){
  const c={payload,window,document,location,URLSearchParams,console};vm.createContext(c);vm.runInContext(script,c);const run=s=>vm.runInContext(s,c);run("setData(payload,'live')");
  return {c,run,page:()=>el('app').innerHTML,el,clicks,stack,backs:()=>backs};
 }
+function extendedSetup(){
+ const ctx=setup(),sample=JSON.parse(fs.readFileSync(new URL('fixtures/root-wave-contract.json','file://'+__filename),'utf8'));
+ ctx.c.row={...ctx.c.payload.watchlist.items.find(x=>x.analysis?.status==='available'),...sample.items[0]};ctx.c.watch=sample;
+ return ctx;
+}
+test('new root wave view renders exact trajectory, keeps history selection and separates legacy half structure',()=>{
+ const {c,run}=extendedSetup(),f=c.row.analysis.frames.day,m=f.root_waves;c.frame=f;
+ assert.equal(run('validStockAnalysis(row.analysis,row,watch)'),true);
+ const html=run('structurePanel(row,new URLSearchParams())');
+ assert.match(html,/뿌리·매수 파동/);assert.match(html,/중심 위에서 유지/);assert.equal(m.representative_id,'20260113');assert.match(html,/파동 중심 궤적/);assert.match(html,/소멸 이력/);assert.match(html,/고저점 절반 구조 · 기존 보조 지표/);
+ assert.doesNotMatch(html,/NaN|undefined|6\.2%|절반 익절|C=|H=|L=/);
+ const w=m.items[0];c.chosen=w;
+ const selected=run("structurePanel(row,new URLSearchParams({wave:chosen.id}))");
+ assert.match(selected,/과거 소멸 파동/);assert.match(selected,/점선은 확인 전/);
+ assert.ok(selected.includes('data-wave-trajectory="'+w.id+'"'));
+ assert.equal(w.trajectory.at(-1)[0],'20260111');assert.equal(w.invalidated_at,'20260112');
+ const path=run("rootWavePath(row,new URLSearchParams({view:'structure',tf:'day',wave:'20260101',back:'/?market=KOSPI&filter=held'}),chosen.id)");
+ const q=new URLSearchParams(path.split('?')[1]);assert.deepEqual(q.getAll('wave'),[w.id]);assert.equal(q.get('tf'),'day');assert.equal(q.get('back'),'/?market=KOSPI&filter=held');
+ c.q=new URLSearchParams({view:'structure',tf:'day',wave:w.id});assert.equal(new URLSearchParams(run("stockControlPath(row,q,'war')").split('?')[1]).get('wave'),w.id);
+ assert.equal(new URLSearchParams(run("stockControlPath(row,q,'structure','week')").split('?')[1]).get('wave'),null);
+});
+test('wave contract rejects bad timelines, execution claims, and fabricated selection',()=>{
+ const {c,run}=extendedSetup();
+ const mutations=[m=>m.items[0].trajectory.push(['20260112',105]),m=>m.items[0].trajectory[1][0]='20260101',m=>m.items[0].center=-1,m=>m.items[0].retreats=999,m=>m.items[0].confirmed_at=m.items[0].born_at,m=>m.execution_policy='half_exit',m=>m.representative_id='missing'];
+ for(const mutate of mutations){c.bad=structuredClone(c.row.analysis);mutate(c.bad.frames.day.root_waves);assert.equal(run('validStockAnalysis(bad,row,watch)'),false)}
+ c.bad=structuredClone(c.row.analysis);delete c.bad.frames.week.root_waves;assert.equal(run('validStockAnalysis(bad,row,watch)'),false);
+ // An unavailable timeframe has no usable root-wave values.
+ c.bad=structuredClone(c.row.analysis);Object.assign(c.bad.frames.week,{status:'unavailable',bars:[],bars_count:0,price:null,price_date:null,period_start:null,roots:[],half_wave:null,war:{status:'insufficient_history'},root_waves:{version:'root-linked-wave-v1',status:'unavailable',execution_policy:'display_only',items:[],representative_id:null}});
+ assert.equal(run('validStockAnalysis(bad,row,watch)'),true);
+});
 test('all real stock, timeframe and paper views retain source values',()=>{
  const {c,run,page}=setup(),original=JSON.stringify(c.payload);let views=0;
  for(const row of c.payload.watchlist.items.filter(x=>!x.retired)){
