@@ -17,6 +17,42 @@ function extendedSetup(){
  ctx.c.row={...ctx.c.payload.watchlist.items.find(x=>x.analysis?.status==='available'),...sample.items[0]};ctx.c.watch=sample;
  return ctx;
 }
+test('selecting an expired wave preserves the open list, manual closure and scoped navigation',()=>{
+ const {c,run,page,el,clicks,stack}=extendedSetup();
+ // Simulate DOM replacement: new details elements begin closed, as in the browser.
+ const app=el('app'),details=new Map();let markup='';
+ Object.defineProperty(app,'innerHTML',{get(){return markup},set(value){
+  markup=value;details.clear();
+  for(const match of value.matchAll(/<details\b[^>]*\bid="(past-waves-[^"]+)"[^>]*>/g))details.set(match[1],{id:match[1],open:false});
+ }});
+ const getElement=c.document.getElementById;
+ c.document.getElementById=id=>id.startsWith('past-waves-')?(details.get(id)||null):getElement(id);
+ app.querySelectorAll=selector=>selector==='details[open]'?[...details.values()].filter(d=>d.open):[];
+ run('WATCHLIST.items=[row]');
+ const original=JSON.stringify(c.row),list='/?market=KOSPI&filter=held';c.list=list;
+ run('go(list)');run("go(watchStockPath(row,list)+'&view=structure&tf=day')");
+ const id='past-waves-'+c.row.market+'-'+c.row.code+'-day';
+ assert.equal(details.get(id).open,false,'history starts collapsed');
+ details.get(id).open=true;c.window.scrollY=540;
+ const parent=stack.at(-1).state.parent,size=stack.length;
+ const dead=c.row.analysis.frames.day.root_waves.items.find(w=>w.state==='invalidated');c.dead=dead;
+ const target=run('rootWavePath(row,parseRoute().query,dead.id)');
+ const anchor={getAttribute:k=>k==='href'?'#'+target:null,hasAttribute:k=>k==='data-stock-control'};
+ let prevented=false;
+ clicks.get('click')({button:0,preventDefault(){prevented=true},target:{closest(selector){return selector==='a[href]'?anchor:null}}});
+ assert.equal(prevented,true);assert.equal(details.get(id).open,true,'selection must retain the expanded history');
+ assert.match(page(),/과거 소멸 파동/);assert.ok(page().includes('data-wave-trajectory="'+dead.id+'"'));
+ assert.match(page(),/root-wave-choice on" data-stock-control="true" aria-current="true"/);
+ assert.equal(c.window.scrollY,540);assert.equal(stack.length,size);assert.equal(stack.at(-1).state.parent,parent);
+ run('render({preserve:true})');assert.equal(details.get(id).open,true,'background refresh retains expansion');
+ details.get(id).open=false;run('render({preserve:true})');assert.equal(details.get(id).open,false,'manual collapse stays collapsed');
+ details.get(id).open=true;run("go(stockControlPath(row,parseRoute().query,'structure','week'),{keepScroll:true,replace:true})");
+ assert.equal(details.has(id),false,'day expansion must not restore an obsolete day element on another timeframe');
+ c.other={...c.row,code:'000150'};
+ const other=run('structuralWavePanel(other,new URLSearchParams(),other.analysis.frames.day)');
+ assert.ok(other.includes('id="past-waves-KOSPI-000150-day"'));assert.ok(!other.includes('id="'+id+'"'));
+ assert.equal(JSON.stringify(c.row),original,'selection and restoration must not change source wave data');
+});
 test('new root wave view renders exact trajectory, keeps history selection and separates legacy half structure',()=>{
  const {c,run}=extendedSetup(),f=c.row.analysis.frames.day,m=f.root_waves;c.frame=f;
  assert.equal(run('validStockAnalysis(row.analysis,row,watch)'),true);
