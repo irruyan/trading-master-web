@@ -90,3 +90,34 @@ test('background timer does not fetch while hidden; foreground refresh remains a
   await r.context.window.TRADING_MASTER_REFRESH();
   assert.equal(r.calls.length, 2);
 });
+
+test('member mode cannot load account data before authentication or after logout', async () => {
+  const r = runtime(() => response(payload));
+  r.context.window.TRADING_MASTER_CONFIG.membersEnabled = true;
+  let allowed = false;
+  r.context.window.TRADING_MASTER_MEMBERS = { canRead: () => allowed, render: () => !allowed };
+  await r.context.window.TRADING_MASTER_REFRESH();
+  assert.equal(r.calls.length, 0);
+  allowed = true;
+  await r.context.window.TRADING_MASTER_REFRESH();
+  assert.equal(r.run('DATA !== null'), true);
+  allowed = false;
+  r.context.window.TRADING_MASTER_CLEAR_DATA();
+  await r.context.window.TRADING_MASTER_REFRESH();
+  assert.equal(r.calls.length, 1);
+  assert.equal(r.run('DATA === null && WATCHLIST === null'), true);
+});
+
+test('an in-flight financial response cannot repopulate data after logout', async () => {
+  let finish, allowed = true;
+  const r = runtime(() => new Promise(resolve => { finish = resolve; }));
+  r.context.window.TRADING_MASTER_CONFIG.membersEnabled = true;
+  r.context.window.TRADING_MASTER_MEMBERS = { canRead: () => allowed, render: () => !allowed };
+  const pending = r.context.window.TRADING_MASTER_REFRESH();
+  allowed = false;
+  r.context.window.TRADING_MASTER_CLEAR_DATA();
+  finish(response(payload));
+  await pending;
+  assert.equal(r.run('DATA === null && WATCHLIST === null'), true);
+  assert.equal(r.run('REFERENCE_QUOTES && Object.keys(REFERENCE_QUOTES).length'), 0);
+});

@@ -55,6 +55,32 @@ selection date. Prices are Naver daily observations, not real-time order quotes.
 Run `node --test tests/data-loader.test.js tests/performance-display.test.js tests/navigation.test.js tests/watchlist.test.js` for loading, financial display, navigation, same-cycle validation and actual watchlist routes.
 
 
+## Phone membership development
+
+`dist/member-runtime.js` adds the member entrance, phone/password signup and login,
+remembered sessions, password recovery, phone changes and the member profile.
+Large labels, 54px inputs and password visibility controls simplify mobile entry.
+Signup grants membership only; a paid subscription is not automatically created.
+
+The public static configuration keeps `membersEnabled: false`. To preview actual
+authentication, build the UI and run the private engine repository's
+`services/trading-master-members` loopback runner against `build/site` with explicit
+`--mock-sms`. It enables membership in its runtime response and supplies same-origin
+HTTP APIs with server-verified HttpOnly session cookies. No real SMS is sent.
+`node --test tests/*.test.js` and `python tests/browser_members_check.py` validate
+loading gates, replay prevention, UI flows, offline behavior and remembered login.
+
+In member mode the loader waits for authentication, clears in-memory account data
+on logout and discards data completing after logout. A background data refresh
+preserves the code/password currently being entered. Auth/session/member APIs are
+never cached by the service worker; no password or session token is placed in
+browser localStorage. Browser startup requires a server session check.
+
+This is an integration preview, not a deployed paid-data gate. Public raw GitHub
+and bundled beta snapshots remain public. Real SMS, HTTPS hosting, private paid
+feeds/entitlement checks, billing and subscriber synchronization are later work.
+The member service README records the API, constraints and local launch command.
+
 ## Read-only stock analysis
 
 The stock detail has diagnosis, root/buy-half-wave, candle balance (전쟁), and

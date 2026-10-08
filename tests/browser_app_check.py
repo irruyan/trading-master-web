@@ -31,7 +31,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if urlsplit(self.path).path == "/beta/sw.js":
-            body = (artifact / "sw.js").read_text().replace("20261008-app-1", f"20261008-app-{state['worker_version']}").encode()
+            body = (artifact / "sw.js").read_text().replace("20261008-members-1", f"20261008-members-{state['worker_version']}").encode()
             self.send_response(200)
             self.send_header("Content-Type", "text/javascript")
             self.send_header("Cache-Control", "no-store")
@@ -135,7 +135,7 @@ try:
                 }
                 return result;
             }""")
-            assert len(keys) == 9, keys
+            assert len(keys) == 10, keys
             assert all("/api/" not in key and "snapshot" not in key and "raw.githubusercontent.com" not in key for key in keys), keys
 
             # The new worker waits, then updates only after the user clicks.

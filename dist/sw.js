@@ -1,9 +1,9 @@
 // Only the static app shell is stored. Quotes, snapshots and account data stay on the network.
 const CACHE_PREFIX = 'tm-shell-';
 // Bump this version whenever a deployed static shell asset changes.
-const CACHE = CACHE_PREFIX + '20261008-app-1';
+const CACHE = CACHE_PREFIX + '20261008-members-1';
 const ROOT = new URL('./', self.registration.scope);
-const SHELL = ['index.html', 'app.css', 'runtime-config.js', 'app-runtime.js', 'manifest.json', 'icon.svg',
+const SHELL = ['index.html', 'app.css', 'runtime-config.js', 'app-runtime.js', 'member-runtime.js', 'manifest.json', 'icon.svg',
                'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 const ASSETS = new Set(SHELL.map(path => new URL(path, ROOT).href));
 const INDEX = new URL('index.html', ROOT).href;

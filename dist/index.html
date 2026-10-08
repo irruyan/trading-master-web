@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="app.css">
 <script src="runtime-config.js"></script>
 <script defer src="app-runtime.js"></script>
+<script defer src="member-runtime.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문으로 이동</a>
@@ -37,7 +38,7 @@
   <header class="topbar">
     <a class="mobile-brand" href="#/"><span class="brandmark">TM</span>TRADING MASTER</a>
     <div class="desktop-context"><span>Portfolio desk</span><span class="context-divider"></span><b id="page-context">운용 현황</b></div>
-    <div class="header-actions"><button type="button" class="install-button" id="app-install">설치 안내</button><div class="status" aria-live="polite"><span class="status-tag" id="status-tag">데이터 확인</span><span id="header-status">운용 기록을 불러오는 중</span></div></div>
+    <div class="header-actions"><a class="member-button" id="member-menu" href="#/member" hidden>내 계정</a><button type="button" class="install-button" id="app-install">설치 안내</button><div class="status" aria-live="polite"><span class="status-tag" id="status-tag">데이터 확인</span><span id="header-status">운용 기록을 불러오는 중</span></div></div>
   </header>
   <div class="app-messages">
     <section class="app-message" id="connection-note" role="status" hidden><p id="connection-copy"></p><button type="button" id="data-retry">다시 시도</button></section>
@@ -386,6 +387,10 @@ function updateNavigation(r){
   const context=document.getElementById('page-context');if(context)context.textContent=active==='home'?'관심종목':active==='overview'?'운용 현황':active==='performance'?'통합 성과':ACCOUNT_META[active]?.name||'기록 확인';
 }
 function render(options={}){
+  if(window.TRADING_MASTER_CONFIG?.membersEnabled){
+    if(!window.TRADING_MASTER_MEMBERS)return;
+    if(window.TRADING_MASTER_MEMBERS.render(routePath()))return;
+  }
   if(LOAD_ERROR){app.innerHTML=emptyState('데이터를 불러오지 못했습니다.','연결을 확인한 뒤 다시 시도하세요.');return}
   if(!DATA)return;
   const r=parseRoute(),changed=currentPath!==r.path,scroll=Number(window.scrollY)||0;
@@ -428,6 +433,7 @@ function paintDataStatus(){
  notifyDataState();
 }
 function setData(payload,mode){
+  if(window.TRADING_MASTER_CONFIG?.membersEnabled&&!window.TRADING_MASTER_MEMBERS?.canRead())return false;
   const portfolio=payload?.portfolio||payload;if(!validPortfolio(portfolio)||!validWatchlist(payload?.watchlist,portfolio))throw new Error('Invalid product payload');
   if(DATA&&dataTime(portfolio.meta.generated_at)<dataTime(DATA.meta.generated_at)){awaitingNewData=true;paintDataStatus();render({preserve:true});return false}
   const hadData=Boolean(DATA);DATA=portfolio;WATCHLIST=payload?.watchlist||null;REFERENCE_QUOTES=payload?.reference_quotes||{};LOAD_ERROR=null;DATA_MODE=mode;awaitingNewData=false;
@@ -444,12 +450,16 @@ async function loadDataOnce(){
   scheduleRefresh(Number(cfg.retryMs)||60000);
 }
 function loadData(){
+ if(window.TRADING_MASTER_CONFIG?.membersEnabled&&!window.TRADING_MASTER_MEMBERS?.canRead())return Promise.resolve();
  if(loadPromise)return loadPromise;
  loadPromise=loadDataOnce().finally(()=>{loadPromise=null;notifyDataState()});notifyDataState();return loadPromise;
 }
 window.TRADING_MASTER_DATA_STATE=dataState;
 window.TRADING_MASTER_REFRESH=loadData;
 window.TRADING_MASTER_CONNECTION_CHANGED=paintDataStatus;
+window.TRADING_MASTER_RENDER=render;
+window.TRADING_MASTER_GO=go;
+window.TRADING_MASTER_CLEAR_DATA=()=>{clearTimeout(refreshTimer);DATA=null;WATCHLIST=null;REFERENCE_QUOTES={};LOAD_ERROR=null;DATA_MODE='loading';refreshFailed=false;awaitingNewData=false;currentPath=null;document.getElementById('forward-date').textContent='—';paintDataStatus()};
 document.addEventListener?.('change',event=>{if(event.target?.id==='watch-sort')go(watchPath({...watchOptions(),sort:event.target.value,limit:30}))});
 document.addEventListener?.('click',event=>{
   if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
