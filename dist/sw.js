@@ -1,26 +1,37 @@
-// 주식트레이딩마스터 — 최소 서비스워커 (PWA 설치/오프라인 셸)
-// 캐시 버전을 올리면 activate 시 옛 캐시를 자동 삭제 → 모든 사용자 브라우저가 새로 받음.
-const CACHE = 'tm-shell-v17';
-const SHELL = ['./', './manifest.json', './icon.svg'];
+// Only the static app shell is stored. Quotes, snapshots and account data stay on the network.
+const CACHE_PREFIX = 'tm-shell-';
+// Bump this version whenever a deployed static shell asset changes.
+const CACHE = CACHE_PREFIX + '20261008-app-1';
+const ROOT = new URL('./', self.registration.scope);
+const SHELL = ['index.html', 'app.css', 'runtime-config.js', 'app-runtime.js', 'manifest.json', 'icon.svg',
+               'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
+const ASSETS = new Set(SHELL.map(path => new URL(path, ROOT).href));
+const INDEX = new URL('index.html', ROOT).href;
 
-self.addEventListener('install', e => {
-  self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL).catch(() => {})));
+self.addEventListener('install', event => {
+  // A failed asset download must not replace a working installed version.
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll([...ASSETS])));
 });
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys()
+    .then(keys => Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key !== CACHE).map(key => caches.delete(key))))
+    .then(() => self.clients.claim()));
 });
-self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-  // 시세/계산 API는 항상 네트워크 (국내 /api/* + 글로벌 /global/api/* 모두 캐시 금지)
-  if (/\/api(\/|$)/.test(url.pathname)) return;
-  // 셸은 네트워크 우선, 실패 시 캐시 폴백
-  e.respondWith(
-    fetch(e.request)
-      .then(r => { const c = r.clone(); caches.open(CACHE).then(ca => ca.put(e.request, c)); return r; })
-      .catch(() => caches.match(e.request))
-  );
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.origin !== ROOT.origin) return;
+  const isHome = event.request.mode === 'navigate' && (url.pathname === ROOT.pathname || url.href === INDEX);
+  const key = isHome ? INDEX : url.href;
+  if (!ASSETS.has(key)) return;
+  event.respondWith(caches.open(CACHE).then(async cache => {
+    const stored = await cache.match(key);
+    if (stored) return stored;
+    const response = await fetch(event.request);
+    if (response.ok && response.type === 'basic') await cache.put(key, response.clone());
+    return response;
+  }));
 });

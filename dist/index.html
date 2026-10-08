@@ -6,10 +6,15 @@
 <title>트레이딩 마스터 · 관심종목</title>
 <meta name="description" content="코스피·코스닥 관심종목, 선정 근거와 모의계좌 운용 기록.">
 <meta name="theme-color" content="#101d32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="트레이딩 마스터">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="stylesheet" href="app.css">
 <script src="runtime-config.js"></script>
+<script defer src="app-runtime.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문으로 이동</a>
@@ -32,10 +37,15 @@
   <header class="topbar">
     <a class="mobile-brand" href="#/"><span class="brandmark">TM</span>TRADING MASTER</a>
     <div class="desktop-context"><span>Portfolio desk</span><span class="context-divider"></span><b id="page-context">운용 현황</b></div>
-    <div class="status" aria-live="polite"><span class="status-tag" id="status-tag">데이터 확인</span><span id="header-status">운용 기록을 불러오는 중</span></div>
+    <div class="header-actions"><button type="button" class="install-button" id="app-install">설치 안내</button><div class="status" aria-live="polite"><span class="status-tag" id="status-tag">데이터 확인</span><span id="header-status">운용 기록을 불러오는 중</span></div></div>
   </header>
+  <div class="app-messages">
+    <section class="app-message" id="connection-note" role="status" hidden><p id="connection-copy"></p><button type="button" id="data-retry">다시 시도</button></section>
+    <section class="app-message app-update" id="app-update-note" role="status" hidden><p>새 버전이 준비됐습니다.</p><button type="button" id="app-update">업데이트</button></section>
+  </div>
   <main id="app" class="shell" aria-label="운용 정보"><div class="loading"><span class="loader" aria-hidden="true"></span><span>운용 기록을 불러오는 중입니다.</span></div></main>
 </div>
+<dialog class="install-guide" id="install-guide" aria-labelledby="install-title"><h2 id="install-title">홈 화면에서 바로 열기</h2><p>휴대폰 홈 화면에 트레이딩 마스터를 추가할 수 있습니다.</p><ol><li><b>아이폰</b><span>Safari에서 공유 버튼을 누르고 ‘홈 화면에 추가’를 선택하세요.</span></li><li><b>안드로이드</b><span>Chrome 메뉴에서 ‘앱 설치’ 또는 ‘홈 화면에 추가’를 선택하세요.</span></li></ol><p class="install-help">다음 실행부터 홈 화면 아이콘을 눌러 열 수 있습니다.</p><form method="dialog"><button class="install-close">확인</button></form></dialog>
 <nav class="mobile-nav" aria-label="모바일 주요 메뉴">
   <a id="mobile-home" href="#/"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/></svg><span>관심종목</span></a>
   <a id="mobile-overview" href="#/overview"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>현황</span></a>
@@ -45,7 +55,7 @@
 </nav>
 <script>
 const ACCOUNT_META={ks_mid:{name:'코스피',market:'KOSPI',desc:'대형주·중형주 중심 모의계좌'},kq_mid:{name:'코스닥',market:'KOSDAQ',desc:'성장주 중심 모의계좌'}};
-let DATA=null,WATCHLIST=null,REFERENCE_QUOTES={},LOAD_ERROR=null,DATA_MODE='loading',refreshTimer=null,currentPath=null;
+let DATA=null,WATCHLIST=null,REFERENCE_QUOTES={},LOAD_ERROR=null,DATA_MODE='loading',refreshTimer=null,currentPath=null,loadPromise=null,refreshFailed=false,awaitingNewData=false,lastAttemptAt=0;
 const app=document.getElementById('app'),routeScroll=new Map(),accountTabMemory={ks_mid:'hold',kq_mid:'hold'};
 const finite=n=>n!=null&&n!==''&&Number.isFinite(Number(n));
 const num=n=>finite(n)?Math.round(Number(n)).toLocaleString('ko-KR'):'—',won=n=>finite(n)?num(n)+'원':'—';
@@ -408,22 +418,38 @@ function validWatchlist(w,p){
 async function fetchJson(url,timeoutMs){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);try{const r=await fetch(url,{cache:'no-store',signal:controller.signal,headers:{Accept:'application/json'}});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(timer)}}
 function liveUrl(){const cfg=window.TRADING_MASTER_CONFIG||{},direct=String(cfg.snapshotUrl||'').trim();if(direct)return direct;const origin=String(cfg.apiOrigin||'').replace(/\/$/,'');return origin?origin+String(cfg.snapshotPath||'/api/v2/snapshot'):null}
 function dataTime(value){const text=String(value||'').replace(' ','T');return Date.parse(/[zZ]|[+-]\d{2}:?\d{2}$/.test(text)?text:text+'+09:00')}
+function dataState(){return {hasData:Boolean(DATA),generatedAt:dateTime(DATA?.meta?.generated_at),refreshFailed,awaitingNewData,loading:Boolean(loadPromise),lastAttemptAt}}
+function notifyDataState(){window.TRADING_MASTER_APP?.setDataState(dataState())}
+function paintDataStatus(){
+ const status=document.querySelector('.status'),offline=typeof navigator!=='undefined'&&navigator.onLine===false;
+ status.classList.toggle('live',DATA_MODE==='live'&&!refreshFailed&&!awaitingNewData&&!offline);status.classList.toggle('error',Boolean(LOAD_ERROR));
+ document.getElementById('header-status').textContent=DATA?(DATA_MODE==='live'?'기준 시각 ':'최근 데이터 ')+dateTime(DATA.meta.generated_at)+' KST':LOAD_ERROR?'데이터 연결 오류':'운용 기록을 불러오는 중';
+ document.getElementById('status-tag').textContent=offline?'인터넷 끊김':refreshFailed?'연결 재시도':awaitingNewData?'최신 데이터 대기':DATA_MODE==='live'?'운용 현황':DATA?'최근 기록':'데이터 확인';
+ notifyDataState();
+}
 function setData(payload,mode){
   const portfolio=payload?.portfolio||payload;if(!validPortfolio(portfolio)||!validWatchlist(payload?.watchlist,portfolio))throw new Error('Invalid product payload');
-  if(DATA&&dataTime(portfolio.meta.generated_at)<dataTime(DATA.meta.generated_at)){document.getElementById('status-tag').textContent='최신 데이터 대기';render({preserve:true});return}
-  const hadData=Boolean(DATA);DATA=portfolio;WATCHLIST=payload?.watchlist||null;REFERENCE_QUOTES=payload?.reference_quotes||{};LOAD_ERROR=null;DATA_MODE=mode;
-  const status=document.querySelector('.status'),stamp=portfolio.meta.generated_at||'';
-  status.classList.toggle('live',mode==='live');status.classList.remove('error');
-  document.getElementById('header-status').textContent=(mode==='live'?'기준 시각 ':'최근 데이터 ')+dateTime(stamp)+' KST';
-  document.getElementById('status-tag').textContent=mode==='live'?'운용 현황':'최근 기록';
+  if(DATA&&dataTime(portfolio.meta.generated_at)<dataTime(DATA.meta.generated_at)){awaitingNewData=true;paintDataStatus();render({preserve:true});return false}
+  const hadData=Boolean(DATA);DATA=portfolio;WATCHLIST=payload?.watchlist||null;REFERENCE_QUOTES=payload?.reference_quotes||{};LOAD_ERROR=null;DATA_MODE=mode;awaitingNewData=false;
+  paintDataStatus();
   document.getElementById('forward-date').textContent=fmtDate(DATA.meta.forward_start_date);
   render({preserve:hadData});
+  return true;
 }
-async function loadData(){
-  const cfg=window.TRADING_MASTER_CONFIG||{},endpoint=liveUrl(),timeout=Number(cfg.timeoutMs)||3500;clearTimeout(refreshTimer);
-  if(endpoint){try{setData(await fetchJson(endpoint,timeout),'live');refreshTimer=setTimeout(loadData,Number(cfg.refreshMs)||300000);return}catch(err){console.warn('Live data unavailable; using snapshot.',err);refreshTimer=setTimeout(loadData,Number(cfg.retryMs)||60000)}}
-  try{setData(await fetchJson('/api/v2-portfolio.json',timeout),'snapshot')}catch(err){if(DATA){document.getElementById('status-tag').textContent='연결 재시도';refreshTimer=setTimeout(loadData,Number(cfg.retryMs)||60000);return}LOAD_ERROR=true;document.querySelector('.status').classList.add('error');document.getElementById('header-status').textContent='데이터 연결 오류';document.getElementById('status-tag').textContent='연결 오류';refreshTimer=setTimeout(loadData,Number(cfg.retryMs)||60000);render()}
+function scheduleRefresh(delay){refreshTimer=setTimeout(()=>{refreshTimer=null;if(!document.hidden)loadData()},delay)}
+async function loadDataOnce(){
+  const cfg=window.TRADING_MASTER_CONFIG||{},endpoint=liveUrl(),timeout=Number(cfg.timeoutMs)||3500;clearTimeout(refreshTimer);lastAttemptAt=Date.now();
+  if(endpoint){try{const payload=await fetchJson(endpoint,timeout),accepted=setData(payload,'live');refreshFailed=false;paintDataStatus();scheduleRefresh(accepted?(Number(cfg.refreshMs)||300000):(Number(cfg.retryMs)||60000));return}catch{refreshFailed=true;if(DATA){paintDataStatus();scheduleRefresh(Number(cfg.retryMs)||60000);return}}}
+  try{setData(await fetchJson('./api/v2-portfolio.json',timeout),'snapshot');refreshFailed=Boolean(endpoint);paintDataStatus()}catch{refreshFailed=true;if(!DATA){LOAD_ERROR=true;render()}paintDataStatus()}
+  scheduleRefresh(Number(cfg.retryMs)||60000);
 }
+function loadData(){
+ if(loadPromise)return loadPromise;
+ loadPromise=loadDataOnce().finally(()=>{loadPromise=null;notifyDataState()});notifyDataState();return loadPromise;
+}
+window.TRADING_MASTER_DATA_STATE=dataState;
+window.TRADING_MASTER_REFRESH=loadData;
+window.TRADING_MASTER_CONNECTION_CHANGED=paintDataStatus;
 document.addEventListener?.('change',event=>{if(event.target?.id==='watch-sort')go(watchPath({...watchOptions(),sort:event.target.value,limit:30}))});
 document.addEventListener?.('click',event=>{
   if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;

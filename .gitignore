@@ -3,6 +3,7 @@ build/
 __pycache__/
 .env
 *.png
+!dist/icons/*.png
 .openai/
 dist/legacy.html
 dist/api/portfolio.json

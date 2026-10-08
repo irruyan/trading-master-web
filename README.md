@@ -1,5 +1,31 @@
 # Trading Master Beta
 
+## Installed app foundation
+
+The existing product can run as an installable web app. Android Chromium uses the
+browser install prompt; iPhone users receive Safari home-screen instructions.
+The manifest includes 192/512px PNG icons and a 180px Apple touch icon rendered
+from the existing SVG. Standalone mode hides the installation control.
+
+Only static HTML, styling, scripts and icons are stored by the service worker.
+Portfolio snapshots, quotes, third-party feeds and account APIs are never cached.
+An offline session keeps the already displayed records with their original basis
+timestamp; a new offline launch asks for connectivity instead of restoring market
+data. Online/foreground events resume loading, concurrent refreshes share one
+request, and a failed refresh preserves the verified account/watchlist pair.
+A new app version waits for the user to choose Update, then reloads at the same route.
+
+`node scripts/build-static.js` creates a clean `build/site` with the complete app
+assets and the unmodified bundled snapshot. Run `node --test tests/*.test.js`.
+Optional browser QA uses Python Playwright and local Chromium:
+`python tests/browser_app_check.py` after building. Feed responses are intercepted
+fixtures and no vendor data API or SMS is called. Browser QA includes nested-path
+hosting, installation diagnostics, 320–1280px layouts, offline launch, connection
+recovery and user-controlled version updates. This does not install an OS app or
+verify Safari on a physical iPhone. Native Android/iOS packages and store release
+remain separate work. PNGs are committed; regenerating them uses the optional
+`python scripts/render-icons.py` development tool.
+
 Product UI for the Trading Master beta. Engine formulas remain unchanged; forward and historical performance are separated through the v2 portfolio contract.
 
 ## Data source
@@ -62,5 +88,6 @@ Invalid payload refreshes leave the last verified account/watchlist pair intact.
 Validation: `node --test tests/*.test.js`. The tests include all actual stock/view/
 timeframe combinations, numeric boundaries, bad refresh rejection, zero/one-sided
 war states, history/reading-position restoration and unchanged source values.
-This is a static Site with no compatible managed browser preview; this change was
-checked through executed UI rendering and navigation tests, not browser screenshots.
+Stock-analysis calculations and all route/frame combinations are checked by the
+executed rendering and navigation tests. Local Chromium app-lifecycle checks are
+described above; physical-device stock-chart interactions remain unverified.

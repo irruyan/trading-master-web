@@ -54,7 +54,7 @@ async function run({ apiOrigin, snapshotUrl = '', livePayload, liveFails = false
   assert.match(batch.statusText, /^기준 시각 /);
 
   const fallback = await run({ apiOrigin: 'https://api.example.test', liveFails: true });
-  assert.deepStrictEqual(fallback.calls, ['https://api.example.test/api/v2/snapshot', '/api/v2-portfolio.json']);
+  assert.deepStrictEqual(fallback.calls, ['https://api.example.test/api/v2/snapshot', './api/v2-portfolio.json']);
   assert.match(fallback.statusText, /^최근 데이터 /);
   assert.match(fallback.page, /코스닥/);
   console.log('data loader live/fallback tests passed');
