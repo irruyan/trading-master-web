@@ -28,4 +28,8 @@ test('published artifact includes every installed-app asset and excludes old gen
   assert.equal(fs.readFileSync(path.join(output, 'api/v2-portfolio.json'), 'utf8'),
     fs.readFileSync(path.join(root, 'dist/api/v2-portfolio.json'), 'utf8'), 'packaging must not change financial data');
   assert.equal(fs.readFileSync(path.join(output, 'app.css'), 'utf8'), fs.readFileSync(path.join(root, 'dist/app.css'), 'utf8'));
+  const admin = fs.readFileSync(path.join(output, 'admin.html'), 'utf8');
+  for (const match of admin.matchAll(/(?:href|src)="([^"#]+\.(?:css|js|svg))"/g)) {
+    assert.equal(fs.existsSync(path.join(output, match[1])), true, 'missing admin asset: ' + match[1]);
+  }
 });

@@ -65,7 +65,7 @@ Signup grants membership only; a paid subscription is not automatically created.
 The public static configuration keeps `membersEnabled: false`. To preview actual
 authentication, build the UI and run the private engine repository's
 `services/trading-master-members` loopback runner against `build/site` with explicit
-`--mock-sms`. It enables membership in its runtime response and supplies same-origin
+`--mock-sms --members-enabled`. This separate test enables membership in the runtime response and supplies same-origin
 HTTP APIs with server-verified HttpOnly session cookies. No real SMS is sent.
 `node --test tests/*.test.js` and `python tests/browser_members_check.py` validate
 loading gates, replay prevention, UI flows, offline behavior and remembered login.
@@ -80,6 +80,27 @@ This is an integration preview, not a deployed paid-data gate. Public raw GitHub
 and bundled beta snapshots remain public. Real SMS, HTTPS hosting, private paid
 feeds/entitlement checks, billing and subscriber synchronization are later work.
 The member service README records the API, constraints and local launch command.
+
+## Administrator development
+
+`dist/admin.html`, `admin.css` and `admin.js` are the separate member/subscription
+administrator interface. The private membership service supplies admin-only
+search/list/detail, Korean-day period assignment/extension, pause/stop/resume,
+optimistic revision checks and before/after audit. There is no default admin
+password or web-accessible role grant; trusted CLI setup is documented privately.
+
+The customer beta remains open: static `membersEnabled:false` is unchanged, and
+the local runner now defaults to open beta too. Only explicit `--members-enabled`
+enters the separate customer-login test. No admin link or member access restriction
+has been added to the beta UI. Production deployment remains pending.
+
+Admin pages/assets/private APIs are not in the app service worker cache. Cookie/CSRF
+authentication checks the server admin role; hiding a button is not the permission
+check. Late list/detail responses cannot repopulate private UI after logout.
+`python tests/browser_admin_check.py` exercises the real local API, ordinary-user
+denial, period setup/extension, state changes, competing edits, safe audit rendering,
+mobile widths and continuing beta access without login. All members are fictional;
+actual SMS/payment/subscriber synchronization is not connected.
 
 ## Read-only stock analysis
 

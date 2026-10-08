@@ -20,7 +20,7 @@ screens.mkdir(parents=True, exist_ok=True)
 temp = TemporaryDirectory(prefix="members-browser-")
 offset = [0]
 service = MemberService(Path(temp.name)/"members.sqlite3", sms=MockSms(), clock=lambda: time.time()+offset[0])
-server = make_server(service, static_dir=root/"build/site", port=0, base_path="/beta/")
+server = make_server(service, static_dir=root/"build/site", port=0, base_path="/beta/",members_enabled=True)
 thread = Thread(target=server.serve_forever, daemon=True)
 thread.start()
 url = f"http://127.0.0.1:{server.server_port}/beta/"

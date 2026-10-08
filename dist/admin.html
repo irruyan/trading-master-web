@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>회원·구독 관리 · 트레이딩 마스터</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="admin.css">
+  <script defer src="admin.js"></script>
+</head>
+<body>
+  <header class="admin-header"><a class="admin-brand" href="admin.html"><span>TM</span><b>트레이딩 마스터 <small>운영 관리</small></b></a><div class="admin-header-actions"><a href="./" target="_blank" rel="noopener">베타 열기</a><button id="admin-logout" type="button" hidden>로그아웃</button></div></header>
+  <main>
+    <section class="admin-login" id="admin-login"><div class="eyebrow">TRADING MASTER</div><h1>관리자 로그인</h1><p>관리자 계정으로 회원과 이용 기간을 관리하세요.</p><form id="admin-login-form"><label for="admin-phone">휴대폰 번호</label><input id="admin-phone" type="tel" autocomplete="username" placeholder="010-1234-5678" maxlength="30" required><label for="admin-password">비밀번호</label><input id="admin-password" type="password" autocomplete="current-password" maxlength="128" required><button class="primary" id="admin-login-submit" type="submit">관리자 로그인</button></form><p id="admin-login-message" class="feedback" role="status" aria-live="polite">로그인 정보를 확인하고 있습니다.</p><button id="admin-session-retry" type="button" hidden>다시 확인</button></section>
+    <section id="admin-dashboard" hidden>
+      <div class="page-heading"><div><div class="eyebrow">MEMBERSHIP</div><h1>회원·구독 관리</h1><p>회원별 이용 기간과 상태를 관리합니다.</p></div><button id="admin-refresh" type="button">새로고침</button></div>
+      <p id="admin-test-note" class="test-note" hidden>개발용 관리 화면입니다. 실제 문자 발송과 결제는 연결되지 않았습니다.</p>
+      <div class="summary" aria-label="전체 회원 기준"><div><span>전체 회원</span><b id="count-total">—</b></div><div><span>이용 중</span><b id="count-active">—</b></div><div><span>만료</span><b id="count-expired">—</b></div><div><span>미등록</span><b id="count-none">—</b></div></div>
+      <p id="admin-feedback" class="feedback" role="status" aria-live="polite"></p>
+      <div class="admin-layout">
+        <section class="member-list panel" aria-labelledby="members-title"><div class="panel-heading"><h2 id="members-title">회원 목록</h2><span id="member-total">—</span></div><form id="admin-search-form" class="search-form"><div><label for="member-search">휴대폰 번호 또는 회원번호</label><input id="member-search" type="search" placeholder="번호 끝 4자리로도 검색" maxlength="80"></div><div><label for="member-status">이용 상태</label><select id="member-status"><option value="all">전체</option><option value="active">이용 중</option><option value="scheduled">시작 예정</option><option value="expired">만료</option><option value="none">미등록</option><option value="paused">일시정지</option><option value="cancelled">이용 중단</option></select></div><button type="submit">검색</button></form><div class="table-scroll"><table><thead><tr><th>회원</th><th>상태</th><th>이용 종료일</th><th><span class="sr-only">상세</span></th></tr></thead><tbody id="admin-members"><tr><td colspan="4">회원 정보를 불러오는 중입니다.</td></tr></tbody></table></div><div class="pagination"><button id="page-prev" type="button" disabled>이전</button><span id="page-label">1 / 1</span><button id="page-next" type="button" disabled>다음</button></div></section>
+        <section class="member-detail panel" aria-labelledby="detail-title"><div class="panel-heading"><h2 id="detail-title">회원 상세</h2><button id="detail-refresh" type="button" hidden>최신 정보 불러오기</button></div><div id="detail-empty" class="empty">목록에서 회원을 선택하세요.</div><div id="detail-content" hidden></div></section>
+      </div>
+      <p class="admin-footnote">이용 날짜는 한국 시간 기준입니다. 이용 종료일은 해당 날짜를 포함합니다.</p>
+    </section>
+  </main>
+</body>
+</html>
