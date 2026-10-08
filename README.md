@@ -78,7 +78,8 @@ browser localStorage. Browser startup requires a server session check.
 
 This is an integration preview, not a deployed paid-data gate. Public raw GitHub
 and bundled beta snapshots remain public. Real SMS, HTTPS hosting, private paid
-feeds/entitlement checks, billing and subscriber synchronization are later work.
+feeds/entitlement checks and billing are later work. The development SMS worker
+now uses verified member entitlements as its read-only recipient authority.
 The member service README records the API, constraints and local launch command.
 
 ## Administrator development
@@ -100,7 +101,27 @@ check. Late list/detail responses cannot repopulate private UI after logout.
 `python tests/browser_admin_check.py` exercises the real local API, ordinary-user
 denial, period setup/extension, state changes, competing edits, safe audit rendering,
 mobile widths and continuing beta access without login. All members are fictional;
-actual SMS/payment/subscriber synchronization is not connected.
+actual SMS/payment and production rollout are not connected.
+
+## Member access display and mock signal delivery
+
+The member profile shows actual product, Korean-calendar period and subscription
+status from the member API. Explicit refresh, foreground checks and server-boundary
+refreshes reflect admin period/state edits. Subscription updates preserve code/
+password input on authentication forms. A late session check cannot restore private
+member state after logout. This remains an opt-in membership preview; beta access
+is unchanged and the static config stays `membersEnabled:false`.
+
+The private SMS worker's optional `--members-db` connection selects eligible
+verified members and checks their access again before claiming/retrying sends.
+Pause/resume, expired renewal and changed contacts cannot release old queued
+messages. An active extension keeps a valid pending message. Member DB outages
+hold sends, without falling back to copied entitlements. Only confirmed trades
+enter the mock signal outbox. No real provider, payment or trading-rule changes.
+
+`python tests/browser_entitlements_check.py` verifies admin edits, customer status,
+mock recipients, changed numbers, preserved verification forms, expiry, late
+session responses, responsive layout and absence of cached private data.
 
 ## Read-only stock analysis
 

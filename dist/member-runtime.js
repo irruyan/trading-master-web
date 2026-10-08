@@ -7,13 +7,16 @@
   const state = { ready: false, member: null, csrf: '', mode: '', expires: 0, error: '', busy: false, notice: '' };
   const authPaths = new Set(['/login', '/signup', '/reset-password', '/change-phone', '/member']);
   let verification = null, verificationTimer = null, sessionTimer = null, checking = null, lastCheck = 0, returnRoute = '/';
-  let renderedKey = '';
+  let renderedKey = '', sessionEpoch = 0;
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
   const phoneText = value => String(value).replace(/^(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3');
   const normalized = value => String(value).replace(/[\s()-]/g, '').replace(/^\+82/, '0');
   const path = () => location.hash.slice(1).split('?')[0] || '/';
   const go = value => window.TRADING_MASTER_GO(value);
   const canRead = () => Boolean(state.ready && state.member && state.expires*1000 > Date.now());
+  const subscriptionKey = member => JSON.stringify(member?.subscription || null);
+  const subscriptionLabels = {none:'이용 기간 미등록',scheduled:'시작 예정',active:'이용 중',expired:'기간 만료',paused:'일시정지',cancelled:'이용 중단'};
+  const subscriptionCopy = {none:'이용 기간이 아직 등록되지 않았습니다.',scheduled:'시작일부터 매수·매도 알림의 수신 대상에 포함됩니다.',active:'확정된 매수·매도 알림의 수신 대상입니다.',expired:'이용 기간이 종료되어 알림 수신 대상에서 제외됩니다.',paused:'이용이 일시정지되어 알림 수신 대상에서 제외됩니다.',cancelled:'이용이 중단되어 알림 수신 대상에서 제외됩니다.'};
 
   async function request(endpoint, data) {
     const controller = new AbortController();
@@ -44,23 +47,33 @@
     menu.href = state.member ? '#/member' : '#/login';
     clearTimeout(sessionTimer);
     // A timer longer than 2^31 ms would fire immediately in the browser.
-    if (state.member) sessionTimer = setTimeout(() => checkSession(true), Math.min(Math.max(state.expires*1000-Date.now(), 1000), 3600000));
+    if (state.member) {
+      const sub=state.member.subscription;
+      const boundary=sub?.status==='scheduled'?sub.starts_at:sub?.status==='active'?sub.ends_at:null;
+      const delay=boundary?Math.min(state.expires*1000-Date.now(),boundary*1000-Date.now()+100):state.expires*1000-Date.now();
+      sessionTimer = setTimeout(() => checkSession(true), Math.min(Math.max(delay, 1000), 3600000));
+    }
   }
 
   function checkSession(force = false) {
     if (checking) return checking;
     if (!force && Date.now()-lastCheck < 30000) return Promise.resolve();
     lastCheck = Date.now();
+    const epoch=sessionEpoch;
     checking = request('auth/session').then(result => {
-      const changed = !state.ready || state.member?.id !== result.member?.id || state.member?.phone !== result.member?.phone || Boolean(state.error);
+      if (epoch!==sessionEpoch) return false;
+      const changed = !state.ready || state.member?.id !== result.member?.id || state.member?.phone !== result.member?.phone || subscriptionKey(state.member)!==subscriptionKey(result.member) || Boolean(state.error);
       applySession(result);
       if (changed) window.TRADING_MASTER_RENDER();
       if (canRead()) window.TRADING_MASTER_REFRESH?.();
+      return true;
     }).catch(error => {
+      if (epoch!==sessionEpoch) return false;
       // Keep a verified, unexpired session during a temporary connectivity loss.
-      if (canRead()) return;
+      if (canRead()) return false;
       state.ready = false; state.member = null; state.error = error.message;
       window.TRADING_MASTER_CLEAR_DATA?.(); window.TRADING_MASTER_RENDER();
+      return false;
     }).finally(() => { checking = null; });
     return checking;
   }
@@ -89,7 +102,7 @@
     document.body.classList.toggle('member-locked', locked);
     document.body.classList.toggle('member-view', handled);
     if (!handled) { renderedKey=''; clearInterval(verificationTimer); verification=null; return false; }
-    const key = [route, state.ready, state.member?.id, state.member?.phone, state.error].join('|');
+    const key = [route, state.ready, state.member?.id, state.member?.phone, state.error,route==='/member'?subscriptionKey(state.member):''].join('|');
     // A quote refresh must not erase a code/password currently being entered.
     if (key===renderedKey && !state.notice) return true;
     renderedKey=key;
@@ -99,7 +112,14 @@
     }
     clearInterval(verificationTimer); verification = null;
     if (canRead() && route === '/member') {
-      app.innerHTML = frame('내 계정', '가입 정보와 이용 상태를 확인하세요.', '<dl class="member-details"><div><dt>휴대폰 번호</dt><dd>'+escape(phoneText(state.member.phone))+'</dd></div><div><dt>구독 상태</dt><dd>구독 준비 중</dd></div></dl>'+feedback()+'<a class="member-primary" href="#/">운용 화면 보기</a><a class="member-secondary" href="#/change-phone">휴대폰 번호 변경</a><a class="member-secondary" href="#/reset-password">비밀번호 재설정</a><button type="button" class="member-secondary" data-member-action="logout">로그아웃</button>');
+      const sub=state.member.subscription || {status:'none'};
+      const details='<dl class="member-details"><div><dt>휴대폰 번호</dt><dd>'+escape(phoneText(state.member.phone))+'</dd></div>'+
+        (sub.product?'<div><dt>이용 상품</dt><dd>'+escape(sub.product.name)+'</dd></div>':'')+
+        '<div><dt>이용 상태</dt><dd id="member-subscription-status">'+escape(subscriptionLabels[sub.status]||'확인 필요')+'</dd></div>'+
+        (sub.start_date&&sub.end_date?'<div><dt>이용 기간</dt><dd id="member-subscription-period">'+escape(sub.start_date)+'<br>~ '+escape(sub.end_date)+'까지</dd></div>':'')+'</dl>';
+      app.innerHTML = frame('내 계정', '가입 정보와 이용 상태를 확인하세요.', details+'<p class="member-help" id="member-subscription-help">'+escape(subscriptionCopy[sub.status]||'이용 상태를 다시 확인해 주세요.')+'</p>'+
+        (sub.end_date?'<p class="member-help">표시된 종료일의 밤 12시까지 이용할 수 있습니다. (한국 시간)</p>':'')+
+        feedback()+'<button type="button" class="member-secondary" data-member-action="refresh-subscription">이용 상태 새로고침</button><a class="member-primary" href="#/">운용 화면 보기</a><a class="member-secondary" href="#/change-phone">휴대폰 번호 변경</a><a class="member-secondary" href="#/reset-password">비밀번호 재설정</a><button type="button" class="member-secondary" data-member-action="logout">로그아웃</button>');
     } else if (route === '/signup' || route === '/reset-password' || (route === '/change-phone' && canRead())) {
       const purpose = route === '/signup' ? 'signup' : route === '/change-phone' ? 'change_phone' : 'reset';
       const title = purpose==='signup'?'회원가입':purpose==='reset'?'비밀번호 찾기':'휴대폰 번호 변경';
@@ -169,6 +189,7 @@
       endpoint=kind==='signup'?'auth/signup':kind==='reset'?'auth/reset-password':'auth/change-phone';
       if (kind==='signup') data.remember=remember;
     }
+    sessionEpoch++;
     busy(true); message('처리 중입니다.');
     try {
       const result = await request(endpoint, data);
@@ -201,7 +222,14 @@
       input.type=show?'text':'password'; button.textContent=show?'숨기기':'보기'; button.setAttribute('aria-pressed', String(show));
     } else if (button.id==='member-send-code') sendCode();
     else if (button.dataset.memberAction==='reconnect') checkSession(true);
+    else if (button.dataset.memberAction==='refresh-subscription') {
+      button.disabled=true;
+      const refreshed=await checkSession(true);
+      if (refreshed===false && canRead()) message('연결을 확인한 뒤 다시 시도해 주세요. 마지막으로 확인한 이용 상태입니다.',true);
+      if (button.isConnected) button.disabled=false;
+    }
     else if (button.dataset.memberAction==='logout') {
+      sessionEpoch++;
       busy(true);
       try { applySession(await request('auth/logout', {})); go('/login'); }
       catch (error) { message(error.message, true); }

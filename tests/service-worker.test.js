@@ -11,7 +11,7 @@ function runtime({ failInstall = false } = {}) {
     async match(key) { return stored.get(key); }, async put(key, value) { puts.push(key); stored.set(key, value); } };
   const self = { registration: { scope: 'https://app.example/tm/' }, addEventListener(type, fn) { events.set(type, fn); },
     clients: { async claim() { claimed = true; } }, skipWaiting() { skipped = true; } };
-  const context = { URL, self, caches: { async open() { return cache; }, async keys() { return ['tm-shell-v17', 'tm-shell-20261008-members-1', 'other-app-cache']; }, async delete(key) { deleted.push(key); } },
+  const context = { URL, self, caches: { async open() { return cache; }, async keys() { return ['tm-shell-v17', 'tm-shell-20261008-entitlements-1', 'other-app-cache']; }, async delete(key) { deleted.push(key); } },
     fetch: async request => { network.push(request.url); return { ok: true, type: 'basic', clone() { return this; } }; } };
   vm.runInNewContext(code, context);
   function fetchEvent(url, method = 'GET', mode = 'cors') {

@@ -31,7 +31,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if urlsplit(self.path).path == "/beta/sw.js":
-            body = (artifact / "sw.js").read_text().replace("20261008-members-1", f"20261008-members-{state['worker_version']}").encode()
+            body = (artifact / "sw.js").read_text().replace("20261008-entitlements-1", f"20261008-members-{state['worker_version']}").encode()
             self.send_response(200)
             self.send_header("Content-Type", "text/javascript")
             self.send_header("Cache-Control", "no-store")
