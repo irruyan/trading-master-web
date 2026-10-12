@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101d32">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="트레이딩 마스터의 정보 등급, 충전형, 월정액을 직접 비교하고 눌러보는 상품 체험 페이지.">
+  <title>트마 · 이용권 선택 체험</title>
+  <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="payment-demo.css">
+  <script src="payment-demo-model.js" defer></script>
+  <script src="payment-demo.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">본문으로 이동</a>
+  <div class="demo-bar"><span class="demo-dot"></span><strong>상품 체험</strong><span>가격·정보 구성은 논의용 예시입니다. 실제 결제와 문자 발송은 없습니다.</span></div>
+  <header class="header">
+    <a class="brand" href="payment-demo.html"><span class="brandmark">TM</span><span>TRADING MASTER<small>트레이딩 마스터</small></span></a>
+    <nav aria-label="페이지 메뉴"><a href="#products">상품 선택</a><a href="#account">내 이용권</a><button class="plain" id="share-link" type="button">링크 복사 <span aria-hidden="true">↗</span></button></nav>
+  </header>
+  <main id="main">
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow">TRADING MASTER MEMBERSHIP</p><h1 id="page-title">정보는 나에게 맞게.<br>결제는 편한 방식으로.</h1><p class="intro-copy">정보 등급을 고르고, 충전형과 월정액을 비교해보세요.<br>같은 등급에서는 같은 공통 매수·매도 정보를 받습니다.</p></div>
+      <div class="intro-note"><span class="note-line"></span><p>확정된 매수·매도 신호를<br><strong>문자와 앱에서 함께</strong></p><span>단방향 공통 정보 제공</span></div>
+    </section>
+    <div class="purchase-layout" id="products">
+      <div class="product-column">
+        <section aria-labelledby="tier-title">
+          <div class="section-heading"><span class="step">01</span><div><h2 id="tier-title">정보 등급을 선택하세요</h2><p>선별 기준과 분석 깊이가 다른 정보 묶음으로 가정했어요.</p></div></div>
+          <div class="tier-grid" role="group" aria-label="정보 등급">
+            <button class="tier-card selected" data-tier="basic" type="button" aria-pressed="true">
+              <span class="tier-top"><span class="tier-icon" aria-hidden="true">Ⅰ</span><span class="choice-dot" aria-hidden="true"></span></span>
+              <strong>기본</strong><span class="tier-sub">공통 전략의 기본 매매 정보</span><span class="tier-detail">표준 기준으로 선정한<br>종목의 매수·매도 신호</span><span class="tier-bottom">충전 10건 <b>10,000원</b></span>
+            </button>
+            <button class="tier-card" data-tier="advanced" type="button" aria-pressed="false">
+              <span class="tier-top"><span class="tier-icon" aria-hidden="true">Ⅱ</span><span class="choice-dot" aria-hidden="true"></span></span>
+              <strong>심화</strong><span class="tier-sub">추가 기준을 적용한 선별 정보</span><span class="tier-detail">선별 조건과 분석을 더한<br>공통 매수·매도 신호</span><span class="tier-bottom">충전 40건 <b>100,000원</b></span>
+            </button>
+            <button class="tier-card" data-tier="premium" type="button" aria-pressed="false">
+              <span class="tier-top"><span class="tier-icon" aria-hidden="true">Ⅲ</span><span class="choice-dot" aria-hidden="true"></span></span>
+              <strong>프리미엄</strong><span class="tier-sub">별도 핵심 전략의 전문 정보</span><span class="tier-detail">독자 전략과 심층 선별을<br>적용한 공통 매매 신호</span><span class="tier-bottom">충전 30건 <b>300,000원</b></span>
+            </button>
+          </div>
+          <p class="small-note">등급별 콘텐츠는 가정입니다. 상위 등급에 하위 등급 전체를 포함하지 않는 초안이며, 모든 등급의 발송 속도는 같습니다.</p>
+        </section>
+        <section class="plan-section" aria-labelledby="plan-title">
+          <div class="section-heading"><span class="step">02</span><div><h2 id="plan-title">받는 방식을 선택하세요</h2><p>기간으로 이용하거나, 필요한 건수를 구매할 수 있어요.</p></div></div>
+          <div class="plan-grid" role="group" aria-label="결제 방식">
+            <button class="plan-card selected" data-plan="subscription" type="button" aria-pressed="true">
+              <span class="plan-top"><strong>월정액</strong><span class="pill">꾸준히 받기</span></span>
+              <span class="plan-price"><b id="monthly-price">30,000</b>원 <small>/ 월</small></span>
+              <span class="plan-description">이용 기간 동안 선택한 등급의<br><b>모든 매수·매도 신호</b>를 받습니다.</span>
+              <span class="plan-features"><span>✓ 건수 차감 없음</span><span>✓ 매월 자동갱신 · 갱신 해지 가능</span></span>
+            </button>
+            <button class="plan-card" data-plan="credit" type="button" aria-pressed="false">
+              <span class="plan-top"><strong>충전형</strong><span class="pill neutral" id="pack-pill">10건 구매</span></span>
+              <span class="plan-price"><b id="credit-price">10,000</b>원 <small>/ 1회</small></span>
+              <span class="plan-description">앞으로 발생하는 공통 신호에<br><b>정보 1건씩</b> 자동 사용됩니다.</span>
+              <span class="plan-features"><span>✓ 남은 건수 보관 · 자동 재결제 없음</span><span>✓ 모두 사용하면 추가 구매</span></span>
+            </button>
+          </div>
+        </section>
+        <details class="comparison" id="comparison">
+          <summary><span>내가 받는 양이라면, 어떤 방식이 맞을까요?</span><span class="summary-arrow" aria-hidden="true">+</span></summary>
+          <div class="comparison-body">
+            <label for="usage-input">한 달에 받는 정보를 가정해보세요 <span><input id="usage-input" type="number" min="0" max="300" value="20" inputmode="numeric" aria-label="가정한 한 달 정보 수신 건수">건</span></label>
+            <input id="usage-range" type="range" min="0" max="120" value="20" aria-label="가정한 한 달 정보 수신 건수 슬라이더">
+            <div class="comparison-grid"><div><span>필요한 충전 구매액</span><strong id="comparison-credit"></strong><small id="comparison-left"></small></div><div><span>월정액 이용료</span><strong id="comparison-month"></strong><small>해당 기간 발생한 신호 전체</small></div></div>
+            <p id="comparison-result"></p><p class="small-note">충전은 묶음 단위 구매액으로 계산하며 남은 건수는 보관됩니다. 실제 신호 수를 보장하는 계산이 아닙니다.</p>
+          </div>
+        </details>
+      </div>
+      <aside class="order-panel" aria-labelledby="order-title">
+        <span class="order-kicker">선택한 이용권</span><h2 id="order-title">기본 월정액</h2><p class="order-desc" id="order-description"></p>
+        <dl class="order-items"><div><dt>정보 등급</dt><dd id="order-tier">기본</dd></div><div><dt>제공 범위</dt><dd id="order-benefit">기간 내 모든 신호</dd></div><div><dt>결제 방식</dt><dd id="order-method">매월 자동갱신</dd></div></dl>
+        <fieldset class="store-select"><legend>결제 화면 체험</legend><label><input type="radio" name="store" value="Google Play" checked><span>Google Play</span></label><label><input type="radio" name="store" value="App Store"><span>App Store</span></label></fieldset>
+        <div class="order-total"><span>오늘 결제할 금액<small>부가세 포함 · 예시 가격</small></span><strong id="order-total">30,000<small>원</small></strong></div>
+        <button class="primary checkout-button" id="checkout-open" type="button">30,000원 모의 결제 <span aria-hidden="true">→</span></button>
+        <p class="checkout-note" id="checkout-note"></p><p class="demo-assurance"><span aria-hidden="true">◇</span> 실제 돈이 결제되지 않습니다.</p>
+      </aside>
+    </div>
+    <section class="account-section" id="account" aria-labelledby="account-title">
+      <div class="account-heading"><div><p class="eyebrow">MY MEMBERSHIP · 체험</p><h2 id="account-title" tabindex="-1">결제 후에는 이렇게 보여요</h2><p>모의 결제 후 신호를 발생시키면, 수신 상태와 잔여 건수가 바뀝니다.</p></div><button class="secondary reset-button" id="reset-demo" type="button">체험 초기화</button></div>
+      <div class="account-layout">
+        <div class="membership-panel">
+          <div class="membership-top"><span class="status-badge" id="account-status">이용권 없음</span><span class="virtual-date" id="virtual-date"></span></div>
+          <h3 id="account-product">이용권을 먼저 선택해보세요</h3><p id="account-description">위에서 모의 결제를 완료하면 신호 수신을 체험할 수 있어요.</p>
+          <div class="account-facts" id="account-facts"></div>
+          <div class="balance-title"><span>보관 중인 충전권</span><small>월정액 이용 중에는 차감하지 않아요</small></div>
+          <div class="balance-grid" id="balance-grid"></div>
+          <div class="account-actions" id="account-actions"></div>
+        </div>
+        <div class="phone-panel">
+          <div class="phone-heading"><span class="sms-icon" aria-hidden="true">↗</span><div><h3>문자 수신 미리보기</h3><p>실제 발송 없이 화면으로 체험합니다.</p></div><span class="example-tag">예시</span></div>
+          <div class="message-stage" id="message-stage"><p class="message-empty">신호를 발생시키면<br>문자 예시가 여기에 나타나요.</p></div>
+          <div class="signal-controls"><button class="signal-button" id="signal-one" type="button">신호 1건 발생</button><button class="signal-button" id="signal-ten" type="button">신호 10건 발생</button></div>
+          <p class="signal-feedback" id="signal-feedback" role="status">모의 결제를 먼저 해보세요.</p>
+        </div>
+      </div>
+      <div class="scenario-section"><div><strong>논의할 상황을 바로 눌러보세요</strong><p>아래 버튼은 체험 상태를 해당 사례로 바꿉니다.</p></div><div class="scenario-buttons"><button data-scenario="exhaust" type="button">① 충전 10건 모두 사용</button><button data-scenario="preserve" type="button">② 2건 남기고 월정액 전환</button><button data-scenario="expire" type="button">③ 월정액 종료 후 2건 보관</button></div></div>
+      <details class="history-panel"><summary>모의 결제·수신 이력 <span id="history-count">0건</span></summary><ol id="history-list"><li class="history-empty">아직 체험 이력이 없습니다.</li></ol></details>
+    </section>
+    <section class="rules-section" aria-labelledby="rules-title"><h2 id="rules-title">함께 확인할 이용 기준</h2><div class="rules-grid"><div><b>한 신호가 정보 1건</b><p>매수·추가매수·부분매도·전량매도 각각 1건입니다. 같은 신호를 다시 읽거나 재전송할 때는 추가 사용하지 않습니다.</p></div><div><b>기간 또는 건수까지 이용</b><p>충전권 소진이나 월정액 종료 시 매수·매도 모두 중단됩니다. 이후 이용은 추가 구매와 수신 재개를 선택합니다.</p></div><div><b>개별 계좌를 관리하지 않아요</b><p>선택한 등급의 공통 정보를 단방향으로 제공합니다. 고객의 실제 매수·매도 여부를 확인하거나 개인 상담을 하지 않습니다.</p></div></div></section>
+    <footer><span>TRADING MASTER</span><p>상품 논의용 체험 · 콘텐츠와 가격 미확정 · 실제 투자 신호가 아닙니다.</p><a href="index.html">트마 베타로 이동 ↗</a></footer>
+  </main>
+  <dialog id="checkout-dialog" aria-labelledby="checkout-title">
+    <form id="checkout-form"><div class="dialog-top"><span class="dialog-eyebrow" id="dialog-store">Google Play · 체험</span><button type="button" class="close-button" data-close-dialog aria-label="결제 창 닫기">×</button></div><h2 id="checkout-title">기본 월정액</h2><p class="dialog-amount" id="dialog-amount"></p><div class="dialog-terms" id="dialog-terms"></div><label class="consent"><input id="checkout-consent" type="checkbox" required><span>위의 가격과 이용 조건을 확인했어요.<small>실제 스토어 결제·구독이 생성되지 않는 체험입니다.</small></span></label><button type="submit" class="primary" id="checkout-confirm" disabled>모의 결제 완료하기</button><button type="button" class="dialog-cancel" data-close-dialog>돌아가기</button></form>
+  </dialog>
+  <dialog id="share-dialog" aria-labelledby="share-title"><div class="dialog-top"><span class="dialog-eyebrow">링크 공유</span><button type="button" class="close-button" data-close-share aria-label="공유 창 닫기">×</button></div><h2 id="share-title">주소를 복사해 공유하세요</h2><p class="share-note">현재 선택한 등급과 결제 방식이 함께 열립니다. 체험 기록은 각 브라우저에 별도로 저장돼요.</p><input id="share-url" readonly aria-label="공유할 페이지 주소"><button type="button" class="primary" data-close-share>확인</button></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <noscript><p class="noscript">이 체험 페이지는 JavaScript를 켜야 버튼과 모의 결제를 이용할 수 있습니다.</p></noscript>
+</body>
+</html>
