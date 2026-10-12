@@ -34,8 +34,11 @@
     const cancel=()=>controller.abort();
     if(signal){if(signal.aborted)cancel();else signal.addEventListener('abort',cancel,{once:true});}
     try {
-      const response=await fetch(new URL('api/'+path,document.baseURI),{method:data===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',signal:controller.signal,
-        headers:data===undefined?{}:{'Content-Type':'application/json','X-Trading-Master-Members':'1','X-CSRF-Token':csrf},body:data===undefined?undefined:JSON.stringify(data)});
+      const options={method:data===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',signal:controller.signal,
+        headers:data===undefined?{}:{'Content-Type':'application/json','X-Trading-Master-Members':'1','X-CSRF-Token':csrf},body:data===undefined?undefined:JSON.stringify(data)};
+      const isDemo=location.pathname.endsWith('/admin-demo.html'),demo=window.TRADING_MASTER_ADMIN_DEMO;
+      if(isDemo&&!demo)throw new Error('체험 화면을 불러오지 못했습니다. 페이지를 새로고침해 주세요.');
+      const response=isDemo?await demo.fetch(path,options):await fetch(new URL('api/'+path,document.baseURI),options);
       const body=await response.json();
       if(!response.ok){
         if(path.startsWith('admin/')&&(response.status===401||response.status===403)){clearPrivate();feedback(body.error,true,true);}
@@ -94,6 +97,7 @@
     el('detail-content').innerHTML='<div class="detail-body"><p class="detail-phone">'+escape(phone(member.phone))+'</p><p class="detail-id">회원번호 '+escape(member.id)+'</p><div class="detail-info"><span>'+escape(sub.product?.name||'트마 공통 매매 알림')+'</span>'+pill(sub.status)+'</div>'+smsOverview(member)+'<form id="admin-period-form" class="period-form"><div class="date-fields"><div><label for="subscription-start">이용 시작일</label><input id="subscription-start" type="date" min="2000-01-01" max="2100-12-31" value="'+escape(sub.start_date||day(Date.now()/1000))+'" required></div><div><label for="subscription-end">이용 종료일 · 해당일 포함</label><input id="subscription-end" type="date" min="2000-01-01" max="2100-12-31" value="'+escape(sub.end_date||'')+'" required></div></div><p class="help">한국 시간 기준으로 종료일이 끝날 때까지 이용할 수 있습니다.</p><div class="admin-note"><label for="subscription-note">변경 사유 · 선택</label><textarea id="subscription-note" maxlength="300" placeholder="예: 베타 이용 기간 부여"></textarea></div><button type="submit" class="primary">이용 기간 저장</button></form><div class="detail-section"><h3>기간 연장</h3><form id="admin-extension-form" class="extension-form"><label for="extension-days" class="sr-only">연장 일수</label><input id="extension-days" type="number" min="1" max="3650" step="1" value="30" required><span>일</span><button type="submit" '+(!exists?'disabled':'')+'>기간 연장</button></form><p class="help">이용 중이면 기존 종료일에 더하고, 만료됐다면 오늘부터 시작합니다. 일시정지·이용 중단 상태는 연장해도 유지됩니다.</p></div><div class="detail-section"><h3>이용 상태</h3><div class="state-actions"><button type="button" data-state="enabled" '+(!exists||sub.state==='enabled'?'disabled':'')+'>이용 재개</button><button type="button" data-state="paused" '+(!exists||sub.state==='paused'?'disabled':'')+'>일시정지</button><button type="button" data-state="cancelled" '+(!exists||sub.state==='cancelled'?'disabled':'')+'>이용 중단</button></div><p class="help">이용 재개 후에도 이용 기간이 만료된 경우 기간 연장이 필요합니다.</p></div>'+consentSection()+'<div class="detail-section"><h3>이용 기간 변경 이력 · 최근 20건</h3>'+history(result.history)+'</div></div>';
     el('admin-members').querySelectorAll('tr[data-id]').forEach(row=>row.classList.toggle('selected',row.dataset.id===member.id));
     renderConsent();loadConsent();
+    if(mutating)el('detail-content').querySelectorAll('button,input,textarea').forEach(node=>{node.disabled=true;});
   }
   function smsOverview(member) {
     const sms=member.signal_sms;

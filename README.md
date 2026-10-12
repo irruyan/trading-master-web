@@ -260,3 +260,39 @@ Build and check the matching member v0.7 / SMS v0.5 sources with
 The integration check covers paging/anchors, exact escaped wording, filters,
 network failures, late responses, role revocation and widths 320–1280 through
 headless Chromium. It never opens a user-facing preview pane.
+
+
+## External administrator walkthrough (fictional data only)
+
+`admin-demo.html` uses the same admin member/consent/message UI as the v0.7
+member runner, with an explicit browser-only fictional adapter. The public
+Sites `admin.html` entrance redirects to this walkthrough. It does not publish
+the Python member service or create real administrator/customer accounts.
+The normal beta stays open, and product/payment terms remain pending.
+
+The page labels its test mode throughout. A prefilled fictional phone and
+`demo` password let a reviewer press **테스트 계정으로 입장** without entering
+personal credentials. These published fixture values are not security controls.
+There are 240 fictional members plus one fictional operator, 47 paged consent
+changes on the first member, and 180 fictional signals / 43,200 virtual delivery
+rows to exercise search, pagination, status counts and message drilldowns.
+Periods can be set/extended/paused/resumed in the current tab. SMS consent is
+read-only. Reload/reset starts the original fixture and logs out; separate tabs
+are independent. No state is written to localStorage/sessionStorage or a server.
+
+The adapter is selected only at the explicit `admin-demo.html` pathname. Missing
+fixture scripts fail with a visible error instead of sending an auth/admin
+request. The actual `admin.html` member-runner UI continues to require its live
+server role/session; loading a fixture global on that path cannot override it.
+No gateway, provider, payment or trading execution is invoked by the walkthrough.
+Only the static demo assets are deployed to Sites; the member v0.7 server remains
+on the separate private development branch until the production-hosting phase.
+
+Check with `node tests/admin-demo.test.js`, `node --test tests/*.test.js`, then
+serve the matched static Sites checkout and run
+`python tests/browser_admin_demo_check.py http://127.0.0.1:18744/`.
+The headless test covers the separate entrance, simulated login, subscriber and
+consent paging, period edits, virtual delivery counts/pages/modals, reset/new-tab
+isolation, missing fixtures, mobile widths and zero real auth/admin API calls.
+The production page is shared via an external browser link; no side preview is
+opened. Existing beta account/watchlist and payment assets are byte-preserved.
