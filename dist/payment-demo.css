@@ -31,3 +31,9 @@
  .tier-card>strong{font-size:18px}.tier-sub{font-size:11px;max-width:140px}.tier-bottom b{font-size:14px}
  .plan-card{padding:17px}.plan-price b{font-size:26px}.plan-top strong{font-size:18px}
 }
+
+/* Explicit selection labels on the grade cards. */
+.section-heading .grade-selection-feedback{color:var(--accent);font-size:13px;font-weight:700;margin-top:8px}
+.tier-action{display:block;text-align:center;margin-top:16px;padding:8px 12px;border:1px solid var(--line);border-radius:4px;font-size:13px;font-weight:650;background:#fff;color:var(--accent)}
+.tier-card.selected .tier-action{background:var(--nav);border-color:var(--nav);color:#fff}
+@media(max-width:650px){.header nav a:first-child{display:inline}.header nav a:nth-child(2){display:none}.tier-action{grid-column:2;grid-row:3;justify-self:start;margin-top:9px;padding:4px 10px;font-size:11px}.section-heading .grade-selection-feedback{font-size:12px}}
