@@ -18,7 +18,8 @@
   function rememberSelection(){try{const u=new URL(location.href);u.searchParams.set('tier',selection.tier);u.searchParams.set('plan',selection.plan);history.replaceState(null,'',u);}catch(e){}}
   function renderSelection(){
     const tier=M.TIERS[selection.tier], monthly=selection.plan==='subscription', price=monthly?tier.monthlyPrice:tier.packPrice;
-    document.querySelectorAll('[data-tier]').forEach(b=>{const on=b.dataset.tier===selection.tier;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on));});
+    document.querySelectorAll('[data-tier]').forEach(b=>{const on=b.dataset.tier===selection.tier;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on));b.querySelector('.tier-action').textContent=on?'선택됨':'선택하기';});
+    $('grade-selection-feedback').textContent='현재 선택: '+tier.name;
     document.querySelectorAll('[data-plan]').forEach(b=>{const on=b.dataset.plan===selection.plan;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on));});
     $('monthly-price').textContent=nf.format(tier.monthlyPrice);$('credit-price').textContent=nf.format(tier.packPrice);$('pack-pill').textContent=tier.packCount+'건 구매';
     $('order-title').textContent=tier.name+' '+(monthly?'월정액':'충전권 '+tier.packCount+'건');
