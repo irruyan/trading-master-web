@@ -280,7 +280,10 @@ Periods can be set/extended/paused/resumed in the current tab. SMS consent is
 read-only. Reload/reset starts the original fixture and logs out; separate tabs
 are independent. No state is written to localStorage/sessionStorage or a server.
 
-The adapter is selected only at the explicit `admin-demo.html` pathname. Missing
+The adapter is selected only by the explicit `data-tm-admin-demo="true"` marker
+on the standalone demo document. Clean URLs with/without `.html`, trailing
+slashes and a mounted app directory use the same fixture, with assets based in
+that app directory. Query-versioned scripts bypass older cached route guards. Missing
 fixture scripts fail with a visible error instead of sending an auth/admin
 request. The actual `admin.html` member-runner UI continues to require its live
 server role/session; loading a fixture global on that path cannot override it.

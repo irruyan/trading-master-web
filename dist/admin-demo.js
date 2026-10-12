@@ -1,7 +1,7 @@
 /* Browser-only adapter, loaded exclusively by the explicitly labeled demo page. */
 (() => {
   'use strict';
-  if(!location.pathname.endsWith('/admin-demo.html')||!window.TradingMasterAdminDemo)return;
+  if(document.documentElement.dataset.tmAdminDemo!=='true'||!window.TradingMasterAdminDemo)return;
   const model=new window.TradingMasterAdminDemo.Demo();
   window.TRADING_MASTER_ADMIN_DEMO=Object.freeze({
     async fetch(path,options){

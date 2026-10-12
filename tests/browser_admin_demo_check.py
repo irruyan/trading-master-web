@@ -3,6 +3,7 @@ from datetime import datetime,timedelta
 import json
 from pathlib import Path
 import sys
+from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 from playwright.sync_api import expect,sync_playwright
 
@@ -29,7 +30,7 @@ with sync_playwright() as p:
     page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append(r.url))
     try:
         page.goto(url+'admin.html#members',wait_until='networkidle')
-        assert page.url.endswith('admin-demo.html#members')
+        assert urlsplit(page.url).path.rstrip('/').endswith(('admin-demo.html','admin-demo')) and urlsplit(page.url).fragment=='members'
         expect(page.locator('.demo-banner')).to_contain_text('가상 데이터');expect(page.locator('#admin-login h1')).to_have_text('관리자 화면 체험')
         page.screenshot(path=str(screens/'entry-desktop.png'),full_page=True)
         enter(page);expect(page.locator('#count-total')).to_have_text('241');expect(page.locator('#count-sms_ready')).to_have_text('30')
@@ -85,7 +86,7 @@ with sync_playwright() as p:
         other=context.new_page();other.goto(url+'admin-demo.html#messaging',wait_until='networkidle');expect(other.locator('#admin-login')).to_be_visible();other.close()
         # Failed fixture loading must never fall through to a real authentication API.
         isolated=browser.new_context();blocked=isolated.new_page();blocked_requests=[]
-        blocked.on('request',lambda r:blocked_requests.append(r.url));blocked.route('**/admin-demo-model.js',lambda route:route.abort())
+        blocked.on('request',lambda r:blocked_requests.append(r.url));blocked.route('**/admin-demo-model.js*',lambda route:route.abort())
         blocked.goto(url+'admin-demo.html',wait_until='networkidle');expect(blocked.locator('#admin-login-message')).to_contain_text('체험 화면을 불러오지 못했습니다')
         assert not [r for r in blocked_requests if '/api/' in r];isolated.close()
         # Existing beta and shared payment prototype still have their old entrance.

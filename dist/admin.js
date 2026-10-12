@@ -36,10 +36,16 @@
     try {
       const options={method:data===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',signal:controller.signal,
         headers:data===undefined?{}:{'Content-Type':'application/json','X-Trading-Master-Members':'1','X-CSRF-Token':csrf},body:data===undefined?undefined:JSON.stringify(data)};
-      const isDemo=location.pathname.endsWith('/admin-demo.html'),demo=window.TRADING_MASTER_ADMIN_DEMO;
+      const isDemo=document.documentElement.dataset.tmAdminDemo==='true',demo=window.TRADING_MASTER_ADMIN_DEMO;
       if(isDemo&&!demo)throw new Error('체험 화면을 불러오지 못했습니다. 페이지를 새로고침해 주세요.');
       const response=isDemo?await demo.fetch(path,options):await fetch(new URL('api/'+path,document.baseURI),options);
-      const body=await response.json();
+      let body;
+      try{body=await response.json();if(!body||typeof body!=='object'||Array.isArray(body))throw new Error('Invalid response');}
+      catch{
+        const message=isDemo?'체험 화면의 응답을 읽지 못했습니다. 새로고침한 뒤 다시 입장해 주세요.':'서버 응답을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.';
+        if(path.startsWith('admin/')&&(response.status===401||response.status===403)){clearPrivate();feedback('관리자 계정으로 다시 로그인해 주세요.',true,true);}
+        throw new Error(message);
+      }
       if(!response.ok){
         if(path.startsWith('admin/')&&(response.status===401||response.status===403)){clearPrivate();feedback(body.error,true,true);}
         throw new Error(body.error||'다시 시도해 주세요.');
