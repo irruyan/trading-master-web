@@ -48,3 +48,11 @@
 .wave-window-note{margin:10px 0 0;color:var(--muted);font-size:12px;line-height:1.7}
 @media(max-width:760px){.frame-tabs a{display:flex;align-items:center;justify-content:center;min-height:44px;min-width:44px}.frame-tabs{flex-shrink:0}}
 @media(max-width:540px){.root-wave-overview{flex-direction:column;align-items:flex-start;gap:18px}.root-wave-price{text-align:left}.root-wave-choice>div{min-width:0}.root-wave-choice b{overflow-wrap:anywhere}.watch-quote .stock-sub{overflow-wrap:anywhere;line-height:1.6}}
+
+/* Entry to the separate product review page. */
+.product-demo-entry{max-width:1472px;margin:0 auto;padding:12px 36px 0;display:flex;justify-content:flex-end}
+.product-demo-entry a{display:inline-flex;align-items:center;gap:24px;min-height:44px;padding:9px 16px;border:1px solid #cad7e7;border-radius:4px;background:#fff;color:#264b77;font-size:14px;font-weight:650}
+.product-demo-entry a:hover{background:#eaf0f7}.product-demo-entry a:focus-visible{outline:3px solid #6c92bd;outline-offset:3px}
+@media(max-width:1250px){.product-demo-entry{padding:12px 26px 0}}
+@media(max-width:1000px){.product-demo-entry{padding:12px 24px 0}}
+@media(max-width:540px){.product-demo-entry{padding:10px 16px 0}.product-demo-entry a{font-size:13px}}
