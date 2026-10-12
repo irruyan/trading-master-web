@@ -185,3 +185,26 @@ war states, history/reading-position restoration and unchanged source values.
 Stock-analysis calculations and all route/frame combinations are checked by the
 executed rendering and navigation tests. Local Chromium app-lifecycle checks are
 described above; physical-device stock-chart interactions remain unverified.
+
+## Customer signal history (development)
+
+With the matching v0.5 member runner and membership explicitly enabled,
+`#/member` opens `#/signals`: date/name/code and buy/sell filters, 20-item cursor
+pages and a message detail dialog. The member server derives scope from the
+live session; there is no phone/member selector. Assigned old messages remain
+readable after subscription expiry; newly allocated messages still require the
+existing member authority. SMS acceptance/delivery/failure are displayed
+separately, without a customer reply, resend or trading action.
+
+History exists only in memory. Logout/identity change clear it; canceled/late
+responses cannot restore it. Network failure keeps an explicitly labeled prior
+result. Private APIs stay outside the service-worker cache. The shell version
+includes `member-signals.js`. Static `membersEnabled:false` remains unchanged:
+this development work does not activate a login wall on the public beta.
+Product tiers/credit billing are intentionally still pending partner review.
+
+Build with `node scripts/build-static.js`, then verify the matched checkouts:
+`TRADING_MASTER_ENGINE_ROOT=/path/to/trading-master-engine python tests/browser_member_signals_check.py`.
+The script runs headless Chromium locally and never opens a user-facing preview
+or sends real SMS. Operational HTTPS/auth, production hosting, real providers,
+physical-device QA and packaging remain separate work.

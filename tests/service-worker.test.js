@@ -11,7 +11,7 @@ function runtime({ failInstall = false } = {}) {
     async match(key) { return stored.get(key); }, async put(key, value) { puts.push(key); stored.set(key, value); } };
   const self = { registration: { scope: 'https://app.example/tm/' }, addEventListener(type, fn) { events.set(type, fn); },
     clients: { async claim() { claimed = true; } }, skipWaiting() { skipped = true; } };
-  const context = { URL, self, caches: { async open() { return cache; }, async keys() { return ['tm-shell-v17', 'tm-shell-20261008-entitlements-1', 'other-app-cache']; }, async delete(key) { deleted.push(key); } },
+  const context = { URL, self, caches: { async open() { return cache; }, async keys() { return ['tm-shell-v17', 'tm-shell-20261008-entitlements-1', 'tm-shell-20261012-member-signals-1', 'other-app-cache']; }, async delete(key) { deleted.push(key); } },
     fetch: async request => { network.push(request.url); return { ok: true, type: 'basic', clone() { return this; } }; } };
   vm.runInNewContext(code, context);
   function fetchEvent(url, method = 'GET', mode = 'cors') {
@@ -32,6 +32,7 @@ test('offline navigation and styles use the complete cached app shell, including
   assert.equal((await r.fetchEvent('https://app.example/tm/app.css')).cached, true);
   assert.equal((await r.fetchEvent('https://app.example/tm/app-runtime.js')).cached, true);
   assert.equal((await r.fetchEvent('https://app.example/tm/member-runtime.js')).cached, true);
+  assert.equal((await r.fetchEvent('https://app.example/tm/member-signals.js')).cached, true);
   assert.equal((await r.fetchEvent('https://app.example/tm/icons/apple-touch-icon.png')).cached, true);
 });
 
@@ -40,7 +41,7 @@ test('snapshots, prices, third-party requests and writes are never intercepted o
   for (const url of ['https://app.example/tm/api/v2-portfolio.json', 'https://app.example/api/quotes',
     'https://app.example/tm/global/api/quotes', 'https://raw.githubusercontent.com/owner/data/main/v2-snapshot.json',
     'https://app.example/tm/private-profile', 'https://app.example/tm/api/auth/session',
-    'https://app.example/tm/api/members/me', 'https://app.example/tm/api/admin/members?q=1234',
+    'https://app.example/tm/api/members/me', 'https://app.example/tm/api/members/signals', 'https://app.example/tm/api/members/signals/'+'a'.repeat(32), 'https://app.example/tm/api/admin/members?q=1234',
     'https://app.example/tm/admin.html', 'https://app.example/tm/admin.js', 'https://app.example/tm/admin.css', 'https://app.example/tm/admin-messaging.js',
     'https://app.example/tm/app.css?token=private']) {
     assert.equal(r.fetchEvent(url), undefined, url);
@@ -52,7 +53,7 @@ test('snapshots, prices, third-party requests and writes are never intercepted o
 test('activation deletes only this app cache and keeps other application data', async () => {
   const r = runtime();
   await r.lifecycle('activate');
-  assert.deepEqual(r.deleted, ['tm-shell-v17']);
+  assert.deepEqual(r.deleted, ['tm-shell-v17', 'tm-shell-20261008-entitlements-1']);
   assert.equal(r.claimed, true);
 });
 

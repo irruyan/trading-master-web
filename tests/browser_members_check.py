@@ -119,7 +119,7 @@ try:
                 assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), width
             page.wait_for_function("Boolean(navigator.serviceWorker.controller)")
             keys = page.evaluate("caches.keys().then(keys=>caches.open(keys.find(k=>k.startsWith('tm-shell-')))).then(cache=>cache.keys()).then(requests=>requests.map(r=>r.url))")
-            assert len(keys)==10 and all("/api/" not in key for key in keys), keys
+            assert len(keys)==11 and all("/api/" not in key for key in keys), keys
             page.set_viewport_size({"width":390,"height":844})
             page.goto(url+"#/overview", wait_until="networkidle")
             expect(page.locator("#app h1")).to_have_text("운용 현황")
