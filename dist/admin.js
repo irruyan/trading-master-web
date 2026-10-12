@@ -3,11 +3,14 @@
   const el = id => document.getElementById(id);
   const escape = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const labels = {none:'미등록',scheduled:'시작 예정',active:'이용 중',expired:'만료',paused:'일시정지',cancelled:'이용 중단'};
-  let csrf='', actor=null, selected=null, page=1, pages=1, query='', filter='all', mutating=false, epoch=0, listSequence=0, detailSequence=0, lastSession=0;
+  let csrf='', actor=null, selected=null, page=1, pages=1, query='', filter='all', smsFilter='all', deliveryFilter='all', mutating=false, epoch=0, listSequence=0, detailSequence=0, lastSession=0;
+  let consentData=null, consentPage=1, consentLoading=false, consentSequence=0, consentController=null, listTime=null;
   const dateTime = seconds => new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'short',timeStyle:'short'}).format(new Date(seconds*1000));
   const day = seconds => new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(seconds*1000));
   const phone = value => String(value).replace(/^(\d{3})(\d{4})(\d{4})$/,'$1-$2-$3');
   const pill = status => '<span class="status-pill status-'+escape(status)+'">'+escape(labels[status]||'확인 중')+'</span>';
+  const channel = {ready:'앱 + 문자',app_only:'앱만 이용',inactive:'신규 제공 없음',not_ready:'제공 설정 확인 필요'};
+  const smsBadge = sms => '<span class="sms-badge '+(sms.enabled?'sms-on':'sms-off')+'">문자 '+(sms.enabled?'켜짐':'꺼짐')+'</span>';
 
   function feedback(text, error=false, login=false) {
     const target=el(login?'admin-login-message':'admin-feedback');
@@ -15,10 +18,15 @@
   }
   function clearPrivate() {
     epoch++; actor=null; selected=null; detailSequence++; listSequence++;
+    consentController?.abort();consentSequence++;consentData=null;consentLoading=false;consentPage=1;listTime=null;
+    query='';filter=smsFilter=deliveryFilter='all';page=pages=1;
+    el('member-search').value='';['member-status','member-sms','member-delivery'].forEach(id=>{el(id).value='all';});
     el('admin-dashboard').hidden=true; el('admin-login').hidden=false; el('admin-logout').hidden=true;
     el('admin-members').innerHTML=''; el('detail-content').innerHTML=''; el('detail-content').hidden=true;
     el('detail-empty').hidden=false; el('detail-refresh').hidden=true;
-    ['total','active','expired','none'].forEach(key=>{el('count-'+key).textContent='—';});
+    ['total','active','expired','none','sms_ready','app_only'].forEach(key=>{el('count-'+key).textContent='—';});
+    el('member-total').textContent='—';el('member-as-of').textContent='';el('page-label').textContent='1 / 1';
+    el('page-prev').disabled=el('page-next').disabled=true;
     window.dispatchEvent(new CustomEvent('tm-admin-session',{detail:{authorized:false}}));
   }
   async function request(path, data, signal) {
@@ -58,30 +66,75 @@
       if(captured!==epoch)return;
       if(applySession(state))await loadList();
       el('admin-session-retry').hidden=true;
-    }catch(error){clearPrivate();feedback(error.message,true,true);el('admin-session-retry').hidden=false;}
+    }catch(error){if(captured===epoch){clearPrivate();feedback(error.message,true,true);el('admin-session-retry').hidden=false;}}
   }
   async function loadList() {
     if(!actor)return;
     const captured=epoch,seq=++listSequence;
     el('admin-refresh').disabled=true;
     try{
-      const params=new URLSearchParams({q:query,status:filter,page:String(page),limit:'20'});
+      const params=new URLSearchParams({q:query,status:filter,sms:smsFilter,delivery:deliveryFilter,page:String(page),limit:'20'});
       const result=await request('admin/members?'+params);
       if(captured!==epoch||seq!==listSequence)return;
       page=result.page;pages=result.pages;
-      ['total','active','expired','none'].forEach(key=>{el('count-'+key).textContent=result.summary[key].toLocaleString('ko-KR');});
+      ['total','active','expired','none','sms_ready','app_only'].forEach(key=>{el('count-'+key).textContent=result.summary[key].toLocaleString('ko-KR');});
+      listTime=result.as_of;el('member-as-of').textContent=dateTime(listTime)+' 조회 기준 · 전체 회원 집계는 검색 조건과 별도입니다.';
+      el('admin-members').classList.remove('is-stale');
       el('member-total').textContent=result.total.toLocaleString('ko-KR')+'명';
-      el('admin-members').innerHTML=result.members.length?result.members.map(member=>'<tr'+(selected?.member.id===member.id?' class="selected"':'')+' data-id="'+escape(member.id)+'"><td>'+escape(member.phone_masked)+(member.role==='admin'?'<small>관리자</small>':'')+'</td><td>'+pill(member.subscription.status)+'</td><td>'+escape(member.subscription.end_date||'—')+'</td><td><button type="button" data-member="'+escape(member.id)+'" aria-label="'+escape(member.phone_masked)+' 상세">상세</button></td></tr>').join(''):'<tr><td colspan="4">검색 조건에 맞는 회원이 없습니다.</td></tr>';
+      el('admin-members').innerHTML=result.members.length?result.members.map(member=>'<tr'+(selected?.member.id===member.id?' class="selected"':'')+' data-id="'+escape(member.id)+'"><td data-label="회원">'+escape(member.phone_masked)+(member.role==='admin'?'<small>관리자</small>':'')+'</td><td data-label="이용 상태">'+pill(member.subscription.status)+'</td><td data-label="문자 / 제공 상태">'+smsBadge(member.signal_sms)+'<small>'+escape(channel[member.signal_sms.state])+'</small></td><td data-label="이용 종료일">'+escape(member.subscription.end_date||'—')+'</td><td><button type="button" data-member="'+escape(member.id)+'" aria-label="'+escape(member.phone_masked)+' 상세">상세</button></td></tr>').join(''):'<tr><td colspan="5">검색 조건에 맞는 회원이 없습니다.</td></tr>';
       el('page-label').textContent=page+' / '+pages; el('page-prev').disabled=page<=1;el('page-next').disabled=page>=pages;
-    }catch(error){feedback(error.message,true);}
+    }catch(error){if(captured===epoch&&seq===listSequence){el('admin-members').classList.add('is-stale');el('member-as-of').textContent=listTime?'이전 조회 결과 · '+dateTime(listTime)+' 기준입니다. 새로고침해 주세요.':'조회하지 못했습니다. 다시 시도해 주세요.';feedback(error.message,true);}}
     finally{if(seq===listSequence)el('admin-refresh').disabled=false;}
   }
   function renderDetail(result) {
+    if(selected?.member.id!==result.member.id){consentController?.abort();consentSequence++;consentData=null;consentPage=1;}
     selected=result;
     const member=result.member,sub=member.subscription,exists=sub.version>0;
     el('detail-empty').hidden=true;el('detail-content').hidden=false;el('detail-refresh').hidden=false;
-    el('detail-content').innerHTML='<div class="detail-body"><p class="detail-phone">'+escape(phone(member.phone))+'</p><p class="detail-id">회원번호 '+escape(member.id)+'</p><div class="detail-info"><span>'+escape(sub.product?.name||'트마 공통 매매 알림')+'</span>'+pill(sub.status)+'</div><form id="admin-period-form" class="period-form"><div class="date-fields"><div><label for="subscription-start">이용 시작일</label><input id="subscription-start" type="date" min="2000-01-01" max="2100-12-31" value="'+escape(sub.start_date||day(Date.now()/1000))+'" required></div><div><label for="subscription-end">이용 종료일 · 해당일 포함</label><input id="subscription-end" type="date" min="2000-01-01" max="2100-12-31" value="'+escape(sub.end_date||'')+'" required></div></div><p class="help">한국 시간 기준으로 종료일이 끝날 때까지 이용할 수 있습니다.</p><div class="admin-note"><label for="subscription-note">변경 사유 · 선택</label><textarea id="subscription-note" maxlength="300" placeholder="예: 베타 이용 기간 부여"></textarea></div><button type="submit" class="primary">이용 기간 저장</button></form><div class="detail-section"><h3>기간 연장</h3><form id="admin-extension-form" class="extension-form"><label for="extension-days" class="sr-only">연장 일수</label><input id="extension-days" type="number" min="1" max="3650" step="1" value="30" required><span>일</span><button type="submit" '+(!exists?'disabled':'')+'>기간 연장</button></form><p class="help">이용 중이면 기존 종료일에 더하고, 만료됐다면 오늘부터 시작합니다. 일시정지·이용 중단 상태는 연장해도 유지됩니다.</p></div><div class="detail-section"><h3>이용 상태</h3><div class="state-actions"><button type="button" data-state="enabled" '+(!exists||sub.state==='enabled'?'disabled':'')+'>이용 재개</button><button type="button" data-state="paused" '+(!exists||sub.state==='paused'?'disabled':'')+'>일시정지</button><button type="button" data-state="cancelled" '+(!exists||sub.state==='cancelled'?'disabled':'')+'>이용 중단</button></div><p class="help">이용 재개 후에도 이용 기간이 만료된 경우 기간 연장이 필요합니다.</p></div><div class="detail-section"><h3>변경 이력 · 최근 20건</h3>'+history(result.history)+'</div></div>';
+    el('detail-content').innerHTML='<div class="detail-body"><p class="detail-phone">'+escape(phone(member.phone))+'</p><p class="detail-id">회원번호 '+escape(member.id)+'</p><div class="detail-info"><span>'+escape(sub.product?.name||'트마 공통 매매 알림')+'</span>'+pill(sub.status)+'</div>'+smsOverview(member)+'<form id="admin-period-form" class="period-form"><div class="date-fields"><div><label for="subscription-start">이용 시작일</label><input id="subscription-start" type="date" min="2000-01-01" max="2100-12-31" value="'+escape(sub.start_date||day(Date.now()/1000))+'" required></div><div><label for="subscription-end">이용 종료일 · 해당일 포함</label><input id="subscription-end" type="date" min="2000-01-01" max="2100-12-31" value="'+escape(sub.end_date||'')+'" required></div></div><p class="help">한국 시간 기준으로 종료일이 끝날 때까지 이용할 수 있습니다.</p><div class="admin-note"><label for="subscription-note">변경 사유 · 선택</label><textarea id="subscription-note" maxlength="300" placeholder="예: 베타 이용 기간 부여"></textarea></div><button type="submit" class="primary">이용 기간 저장</button></form><div class="detail-section"><h3>기간 연장</h3><form id="admin-extension-form" class="extension-form"><label for="extension-days" class="sr-only">연장 일수</label><input id="extension-days" type="number" min="1" max="3650" step="1" value="30" required><span>일</span><button type="submit" '+(!exists?'disabled':'')+'>기간 연장</button></form><p class="help">이용 중이면 기존 종료일에 더하고, 만료됐다면 오늘부터 시작합니다. 일시정지·이용 중단 상태는 연장해도 유지됩니다.</p></div><div class="detail-section"><h3>이용 상태</h3><div class="state-actions"><button type="button" data-state="enabled" '+(!exists||sub.state==='enabled'?'disabled':'')+'>이용 재개</button><button type="button" data-state="paused" '+(!exists||sub.state==='paused'?'disabled':'')+'>일시정지</button><button type="button" data-state="cancelled" '+(!exists||sub.state==='cancelled'?'disabled':'')+'>이용 중단</button></div><p class="help">이용 재개 후에도 이용 기간이 만료된 경우 기간 연장이 필요합니다.</p></div>'+consentSection()+'<div class="detail-section"><h3>이용 기간 변경 이력 · 최근 20건</h3>'+history(result.history)+'</div></div>';
     el('admin-members').querySelectorAll('tr[data-id]').forEach(row=>row.classList.toggle('selected',row.dataset.id===member.id));
+    renderConsent();loadConsent();
+  }
+  function smsOverview(member) {
+    const sms=member.signal_sms;
+    const explanation=sms.state==='ready'?'앞으로 발생하는 새 매매 알림은 앱과 문자로 제공됩니다.':sms.state==='app_only'?'새 매매 알림은 앱으로 제공됩니다. 문자 수신이 꺼져 있습니다.':sms.state==='inactive'?'현재 이용 상태에서는 새 매매 알림이 제공되지 않습니다. 기존 앱 내역은 유지됩니다.':'이용 권한과 문자 수신 설정의 최신 정보를 확인해 주세요.';
+    return '<section class="sms-overview" aria-label="문자 수신과 앱 이용 상태"><div>'+smsBadge(sms)+'<b>'+escape(channel[sms.state])+'</b></div><p>'+escape(explanation)+'</p><p class="help">수신 설정 변경 '+(sms.updated_at?escape(dateTime(sms.updated_at)):'이력 없음')+' · 고객이 직접 변경합니다.</p></section>';
+  }
+  function consentSection() {
+    return '<section class="detail-section" aria-labelledby="consent-title"><div class="consent-heading"><h3 id="consent-title">문자 수신 동의·해지 이력</h3><button id="consent-refresh" type="button">최신 내역</button></div><p class="help">조회 전용입니다. 문자를 켜거나 끄는 것은 고객의 수신 설정에서 처리합니다.</p><p id="consent-count" class="help"></p><p id="consent-feedback" class="feedback" role="status" aria-live="polite"></p><div id="consent-results" role="region" aria-label="문자 수신 동의 이력 목록" tabindex="0"></div><div class="consent-pagination"><button id="consent-previous" type="button" disabled>이전 20건</button><button id="consent-next" type="button" disabled>다음 20건</button></div></section>';
+  }
+  function consentControls() {
+    if(!el('consent-refresh'))return;
+    el('consent-refresh').disabled=consentLoading||mutating;
+    el('consent-previous').disabled=consentLoading||mutating||!consentData?.page.previous;
+    el('consent-next').disabled=consentLoading||mutating||!consentData?.page.next;
+  }
+  function renderConsent() {
+    if(!el('consent-results'))return;
+    const data=consentData,actions={consented:'문자 수신 동의',withdrawn:'문자 수신 해지',phone_changed:'번호 변경 · 문자 수신 꺼짐'};
+    const auditTime=seconds=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'short',timeStyle:'medium'}).format(new Date(seconds*1000));
+    el('consent-count').textContent=data?'전체 '+data.page.total.toLocaleString('ko-KR')+'건 · '+consentPage+'페이지 · '+data.page.shown+'건 표시 · 현재 번호 '+data.current_phone_masked:'';
+    el('consent-results').innerHTML=!data?'<p class="help">동의 이력을 불러오는 중입니다.</p>':data.items.length?'<ol class="consent-history">'+data.items.map(item=>'<li><div class="history-head"><b>'+escape(actions[item.action]||'문자 수신 설정 변경')+'</b><time>'+escape(auditTime(item.created_at))+'</time></div><p>변경 #'+escape(item.version)+' · '+(item.current_number?'현재 번호 기준':'이전 번호 기준')+' · 문자 '+(item.enabled?'켜짐':'꺼짐')+'</p><details><summary>안내 문구 보기 · '+escape(item.consent_version)+'</summary><p>'+escape(item.consent_text)+'</p></details></li>').join('')+'</ol>':'<p class="help">아직 수신 설정 변경 이력이 없습니다. 문자는 기본으로 꺼져 있습니다.</p>';
+    consentControls();
+  }
+  async function loadConsent(cursor='',index=1) {
+    if(!actor||!selected)return;
+    consentController?.abort();consentController=new AbortController();
+    const captured=epoch,memberId=selected.member.id,seq=++consentSequence;
+    consentLoading=true;consentControls();
+    el('consent-feedback').textContent='동의 이력을 조회하고 있습니다.';el('consent-feedback').classList.remove('error');
+    try{
+      const params=new URLSearchParams(cursor?{cursor}:{});
+      const data=await request('admin/members/'+memberId+'/sms-consents'+(cursor?'?'+params:''),undefined,consentController.signal);
+      if(captured!==epoch||seq!==consentSequence||memberId!==selected?.member.id)return;
+      consentData=data;consentPage=index;renderConsent();el('consent-results').classList.remove('is-stale');
+      el('consent-feedback').textContent=data.new_records_available?'새 변경 이력이 있습니다. 최신 내역을 누르면 포함됩니다.':'';
+    }catch(error){
+      if(captured!==epoch||seq!==consentSequence||memberId!==selected?.member.id)return;
+      el('consent-results').classList.add('is-stale');
+      if(!consentData)el('consent-results').innerHTML='<p class="help">동의 이력을 불러오지 못했습니다.</p>';
+      el('consent-feedback').textContent=error.message+(consentData?' 이전 조회 결과가 표시되어 있습니다.':'');el('consent-feedback').classList.add('error');
+    }finally{if(captured===epoch&&seq===consentSequence){consentLoading=false;consentControls();}}
   }
   function history(rows) {
     if(!rows.length)return '<p class="help">아직 변경 이력이 없습니다.</p>';
@@ -95,7 +148,7 @@
     try{
       const result=await request('admin/members/'+encodeURIComponent(id));
       if(captured===epoch&&seq===detailSequence){renderDetail(result);feedback('');}
-    }catch(error){feedback(error.message,true);}
+    }catch(error){if(captured===epoch&&seq===detailSequence)feedback(error.message,true);}
   }
   async function mutate(action,data) {
     if(mutating||!selected)return;
@@ -108,7 +161,7 @@
       const result=await request('admin/members/'+memberId+'/'+action,data);
       if(captured!==epoch)return;
       renderDetail(result);feedback('회원 이용 정보를 저장했습니다.');await loadList();
-    }catch(error){feedback(error.message,true);}
+    }catch(error){if(captured===epoch)feedback(error.message,true);}
     finally{
       mutating=false;
       if(selected&&selected.member.id===memberId){
@@ -116,6 +169,7 @@
         const sub=selected.member.subscription;
         el('admin-extension-form').querySelector('button').disabled=!sub.version;
         el('detail-content').querySelectorAll('[data-state]').forEach(node=>{node.disabled=!sub.version||node.dataset.state===sub.state;});
+        consentControls();
       }
     }
   }
@@ -130,10 +184,13 @@
     }catch(error){feedback(error.message,true,true);}
     finally{el('admin-login-submit').disabled=false;}
   });
-  el('admin-search-form').addEventListener('submit',event=>{event.preventDefault();query=el('member-search').value;filter=el('member-status').value;page=1;loadList();});
-  el('member-status').addEventListener('change',()=>{query=el('member-search').value;filter=el('member-status').value;page=1;loadList();});
+  function searchMembers(){query=el('member-search').value;filter=el('member-status').value;smsFilter=el('member-sms').value;deliveryFilter=el('member-delivery').value;page=1;loadList();}
+  el('admin-search-form').addEventListener('submit',event=>{event.preventDefault();searchMembers();});
+  ['member-status','member-sms','member-delivery'].forEach(id=>el(id).addEventListener('change',searchMembers));
+  el('member-filter-reset').addEventListener('click',()=>{el('member-search').value='';['member-status','member-sms','member-delivery'].forEach(id=>{el(id).value='all';});searchMembers();});
+  document.querySelectorAll('[data-member-delivery]').forEach(button=>button.addEventListener('click',()=>{el('member-search').value='';el('member-status').value=el('member-sms').value='all';el('member-delivery').value=button.dataset.memberDelivery;searchMembers();el('members-title').scrollIntoView({block:'start'});}));
   el('admin-refresh').addEventListener('click',loadList);
-  el('detail-refresh').addEventListener('click',()=>{if(selected)openDetail(selected.member.id);});
+  el('detail-refresh').addEventListener('click',async()=>{if(selected&&!mutating){await openDetail(selected.member.id);await loadList();}});
   el('page-prev').addEventListener('click',()=>{if(page>1){page--;loadList();}});
   el('page-next').addEventListener('click',()=>{if(page<pages){page++;loadList();}});
   el('admin-members').addEventListener('click',event=>{const button=event.target.closest('[data-member]');if(button)openDetail(button.dataset.member);});
@@ -142,7 +199,13 @@
     if(event.target.id==='admin-period-form')mutate('subscription',{start_date:el('subscription-start').value,end_date:el('subscription-end').value});
     else if(event.target.id==='admin-extension-form')mutate('extend',{days:Number(el('extension-days').value)});
   });
-  el('detail-content').addEventListener('click',event=>{const button=event.target.closest('[data-state]');if(button)mutate('state',{state:button.dataset.state});});
+  el('detail-content').addEventListener('click',event=>{
+    const button=event.target.closest('button');if(!button||button.disabled)return;
+    if(button.dataset.state)mutate('state',{state:button.dataset.state});
+    else if(button.id==='consent-refresh')loadConsent();
+    else if(button.id==='consent-previous'&&consentData?.page.previous)loadConsent(consentData.page.previous,Math.max(1,consentPage-1));
+    else if(button.id==='consent-next'&&consentData?.page.next)loadConsent(consentData.page.next,consentPage+1);
+  });
   el('admin-logout').addEventListener('click',async()=>{
     try{const result=await request('auth/logout',{});clearPrivate();csrf=result.csrf_token;feedback('로그아웃했습니다.',false,true);}
     catch(error){feedback(error.message,true);}

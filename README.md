@@ -188,7 +188,7 @@ described above; physical-device stock-chart interactions remain unverified.
 
 ## Customer signal history (development)
 
-With the matching v0.6 member runner and membership explicitly enabled,
+With the matching v0.7 member runner and membership explicitly enabled,
 `#/member` opens `#/signals`: date/name/code and buy/sell filters, 20-item cursor
 pages and a message detail dialog. The member server derives scope from the
 live session; there is no phone/member selector. Assigned old messages remain
@@ -231,3 +231,32 @@ Verify matched services with
 It checks explicit consent, opt-out/reconsent, app-only records, stale revisions,
 lost-response reconciliation, verified number change, late logout responses and
 mobile widths through local headless Chromium without a user-facing preview.
+
+## Administrator SMS consent reporting (development)
+
+`admin.html` now combines period status, the customer's SMS on/off setting and
+current app/SMS eligibility. Whole-member counts include SMS recipients and
+app-only members; shortcuts and intersecting phone/status/SMS/channel filters
+make it possible to find SMS-on but expired members separately from active
+SMS-off members. Lists use masked phones and 20-item pages; mobile uses cards.
+Counts/readiness describe eligibility at query time, not actual delivery.
+
+Member detail has a read-only consent/withdrawal/number-change audit: exact
+historical wording, version, time and current/previous-number marker. It omits
+previous numbers/hashes. Signed 20-item pages keep an insertion anchor until
+latest refresh; new records are announced. Audit refresh preserves period-form
+drafts. Admins cannot turn customer consent on/off. Stored history is retained,
+and the new member DB migration adds only an ordering index.
+
+Tab switching preserves search/member/page state. Errors label prior successful
+results; member switches, logout and role revocation discard late responses.
+No private content enters localStorage, API caches or the static PWA cache.
+The customer shell/cache version and public `membersEnabled:false` stay intact.
+No production merge/deployment, actual SMS, payment, price/tier decision or
+strategy/ledger change is performed by this development feature.
+
+Build and check the matching member v0.7 / SMS v0.5 sources with
+`TRADING_MASTER_ENGINE_ROOT=/path/to/engine python tests/browser_admin_consents_check.py`.
+The integration check covers paging/anchors, exact escaped wording, filters,
+network failures, late responses, role revocation and widths 320–1280 through
+headless Chromium. It never opens a user-facing preview pane.
