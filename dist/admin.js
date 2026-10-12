@@ -19,9 +19,12 @@
     el('admin-members').innerHTML=''; el('detail-content').innerHTML=''; el('detail-content').hidden=true;
     el('detail-empty').hidden=false; el('detail-refresh').hidden=true;
     ['total','active','expired','none'].forEach(key=>{el('count-'+key).textContent='—';});
+    window.dispatchEvent(new CustomEvent('tm-admin-session',{detail:{authorized:false}}));
   }
-  async function request(path, data) {
+  async function request(path, data, signal) {
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+    const cancel=()=>controller.abort();
+    if(signal){if(signal.aborted)cancel();else signal.addEventListener('abort',cancel,{once:true});}
     try {
       const response=await fetch(new URL('api/'+path,document.baseURI),{method:data===undefined?'GET':'POST',credentials:'same-origin',cache:'no-store',signal:controller.signal,
         headers:data===undefined?{}:{'Content-Type':'application/json','X-Trading-Master-Members':'1','X-CSRF-Token':csrf},body:data===undefined?undefined:JSON.stringify(data)});
@@ -34,7 +37,7 @@
     } catch(error){
       if(error.name==='AbortError'||error instanceof TypeError)throw new Error('연결을 확인한 뒤 다시 시도해 주세요.');
       throw error;
-    } finally{clearTimeout(timer);}
+    } finally{clearTimeout(timer);signal?.removeEventListener('abort',cancel);}
   }
   function applySession(state) {
     csrf=state.csrf_token;
@@ -44,6 +47,7 @@
     }
     actor=state.member; el('admin-login').hidden=true; el('admin-dashboard').hidden=false; el('admin-logout').hidden=false;
     el('admin-test-note').hidden=false;
+    window.dispatchEvent(new CustomEvent('tm-admin-session',{detail:{authorized:true}}));
     return true;
   }
   async function checkSession(force=false) {
@@ -146,5 +150,6 @@
   el('admin-session-retry').addEventListener('click',()=>checkSession(true));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkSession();});
   window.addEventListener('pageshow',event=>{if(event.persisted)checkSession(true);});
+  window.TRADING_MASTER_ADMIN=Object.freeze({request,isAdmin:()=>Boolean(actor),epoch:()=>epoch});
   checkSession(true);
 })();

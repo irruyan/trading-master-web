@@ -123,6 +123,32 @@ enter the mock signal outbox. No real provider, payment or trading-rule changes.
 mock recipients, changed numbers, preserved verification forms, expiry, late
 session responses, responsive layout and absence of cached private data.
 
+## Large-volume administrator message history
+
+The separate `admin.html#messaging` tab uses the authenticated member runner with
+explicit `--sms-db` to read signal groups and individual recipient records. A
+signal can have thousands of recipients while occupying one row. Clicking its
+problem count/action opens matching failed/unknown records. Date/stock/phone or
+member/status/action filters, last-four-digit search, 50/100/200-item pages,
+first/previous/next/last controls and detail/attempt modals make records searchable.
+Phone lists are masked; authorized single details show the original recipient.
+
+Paging uses server-side signed cursors and anchors new rows until refresh; it
+never downloads the entire outbox or runs deep OFFSET in the browser. Summary
+counts use date/stock/recipient/signal filters; status narrows the list. Accepted
+and delivered remain separate. Modal closure preserves filters; cancelled/older
+queries and late responses after logout cannot replace current/private views.
+A failed query explicitly marks the previous result. Desktop has a compact table;
+mobile shows cards with visible count/status labels. Admin assets/APIs stay out
+of PWA caching. The beta remains open and has no administrator link/login gate.
+
+`python tests/browser_messaging_check.py` seeds 500,000 fictional deliveries in
+200 groups and checks actual HTTP/UI search, paging, source failure, safe detail
+rendering, private data removal, new-record anchors and six responsive widths.
+Server tests measure roughly 0.1–0.6 seconds per large query on this development
+executor; this is not a production performance promise. No real SMS, retry,
+payment, data contract, strategy change or Sites deployment is triggered.
+
 ## Read-only stock analysis
 
 The stock detail has diagnosis, root/buy-half-wave, candle balance (전쟁), and

@@ -41,7 +41,7 @@ test('snapshots, prices, third-party requests and writes are never intercepted o
     'https://app.example/tm/global/api/quotes', 'https://raw.githubusercontent.com/owner/data/main/v2-snapshot.json',
     'https://app.example/tm/private-profile', 'https://app.example/tm/api/auth/session',
     'https://app.example/tm/api/members/me', 'https://app.example/tm/api/admin/members?q=1234',
-    'https://app.example/tm/admin.html', 'https://app.example/tm/admin.js', 'https://app.example/tm/admin.css',
+    'https://app.example/tm/admin.html', 'https://app.example/tm/admin.js', 'https://app.example/tm/admin.css', 'https://app.example/tm/admin-messaging.js',
     'https://app.example/tm/app.css?token=private']) {
     assert.equal(r.fetchEvent(url), undefined, url);
   }

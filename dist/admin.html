@@ -4,16 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>회원·구독 관리 · 트레이딩 마스터</title>
+  <title>운영 관리 · 트레이딩 마스터</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="admin.css">
   <script defer src="admin.js"></script>
+  <script defer src="admin-messaging.js"></script>
 </head>
 <body>
   <header class="admin-header"><a class="admin-brand" href="admin.html"><span>TM</span><b>트레이딩 마스터 <small>운영 관리</small></b></a><div class="admin-header-actions"><a href="./" target="_blank" rel="noopener">베타 열기</a><button id="admin-logout" type="button" hidden>로그아웃</button></div></header>
   <main>
     <section class="admin-login" id="admin-login"><div class="eyebrow">TRADING MASTER</div><h1>관리자 로그인</h1><p>관리자 계정으로 회원과 이용 기간을 관리하세요.</p><form id="admin-login-form"><label for="admin-phone">휴대폰 번호</label><input id="admin-phone" type="tel" autocomplete="username" placeholder="010-1234-5678" maxlength="30" required><label for="admin-password">비밀번호</label><input id="admin-password" type="password" autocomplete="current-password" maxlength="128" required><button class="primary" id="admin-login-submit" type="submit">관리자 로그인</button></form><p id="admin-login-message" class="feedback" role="status" aria-live="polite">로그인 정보를 확인하고 있습니다.</p><button id="admin-session-retry" type="button" hidden>다시 확인</button></section>
     <section id="admin-dashboard" hidden>
+      <nav class="admin-tabs" aria-label="운영 관리 메뉴"><button type="button" data-admin-tab="members" aria-current="page">회원 관리</button><button type="button" data-admin-tab="messaging">문자 발송 이력</button></nav>
+      <div id="admin-members-pane">
       <div class="page-heading"><div><div class="eyebrow">MEMBERSHIP</div><h1>회원·구독 관리</h1><p>회원별 이용 기간과 상태를 관리합니다.</p></div><button id="admin-refresh" type="button">새로고침</button></div>
       <p id="admin-test-note" class="test-note" hidden>개발용 관리 화면입니다. 실제 문자 발송과 결제는 연결되지 않았습니다.</p>
       <div class="summary" aria-label="전체 회원 기준"><div><span>전체 회원</span><b id="count-total">—</b></div><div><span>이용 중</span><b id="count-active">—</b></div><div><span>만료</span><b id="count-expired">—</b></div><div><span>미등록</span><b id="count-none">—</b></div></div>
@@ -23,6 +26,38 @@
         <section class="member-detail panel" aria-labelledby="detail-title"><div class="panel-heading"><h2 id="detail-title">회원 상세</h2><button id="detail-refresh" type="button" hidden>최신 정보 불러오기</button></div><div id="detail-empty" class="empty">목록에서 회원을 선택하세요.</div><div id="detail-content" hidden></div></section>
       </div>
       <p class="admin-footnote">이용 날짜는 한국 시간 기준입니다. 이용 종료일은 해당 날짜를 포함합니다.</p>
+      </div>
+      <div id="admin-messaging-pane" hidden>
+        <div class="page-heading"><div><div class="eyebrow">MESSAGE HISTORY</div><h1>문자 발송 이력</h1><p>매매 신호별 결과부터 확인하고, 필요한 발송 기록을 찾아보세요.</p></div><button id="message-refresh" type="button" title="새 발송 기록을 포함해 조회합니다.">새로고침</button></div>
+        <p id="message-mode" class="test-note" hidden></p>
+        <form id="message-search-form" class="message-filters panel">
+          <div class="message-dates"><div><label for="message-start">신호 시작일</label><input id="message-start" type="date" required></div><div><label for="message-end">신호 종료일 · 해당일 포함</label><input id="message-end" type="date" required></div></div>
+          <div class="date-presets" aria-label="조회 기간 선택"><button type="button" data-message-days="1">오늘</button><button type="button" data-message-days="7">최근 7일</button><button type="button" data-message-days="30">최근 30일</button><button type="button" data-message-days="90">최근 90일</button></div>
+          <div><label for="message-stock">종목명 또는 종목코드</label><input id="message-stock" type="search" maxlength="80" placeholder="예: S-Oil, 010950"></div>
+          <div><label for="message-recipient">수신자 번호 또는 회원번호</label><input id="message-recipient" type="search" maxlength="40" placeholder="번호 끝 4자리로도 검색"></div>
+          <div><label for="message-status">발송 상태</label><select id="message-status"><option value="all">전체</option><option value="attention">실패·미확인</option><option value="failed">실패</option><option value="unknown">결과 미확인</option><option value="queued">발송 대기</option><option value="sending">처리 중</option><option value="accepted">업체 접수 완료</option><option value="delivered">전달 완료</option><option value="skipped">발송 제외</option><option value="expired">신호 유효시간 종료</option></select></div>
+          <div><label for="message-action">매매 구분</label><select id="message-action"><option value="all">전체</option><option value="buy">신규매수</option><option value="add_buy">추가매수</option><option value="partial_sell">부분매도</option><option value="sell">전량청산</option><option value="protection_update">보호선 변경 · 문자 없음</option></select></div>
+          <div class="message-search-actions"><button type="submit" class="primary">검색</button><button id="message-reset" type="button">조건 초기화</button></div>
+        </form>
+        <p id="message-feedback" class="feedback" role="status" aria-live="polite"></p>
+        <div class="message-summary" aria-label="선택 기간·종목·수신자 기준 발송 집계">
+          <button type="button" data-message-status="all"><span>전체 발송 기록</span><b id="message-count-total">—</b></button>
+          <button type="button" data-message-status="delivered"><span>전달 완료</span><b id="message-count-delivered">—</b></button>
+          <button type="button" data-message-status="accepted"><span>업체 접수 · 전달 대기</span><b id="message-count-accepted">—</b></button>
+          <button type="button" data-message-status="failed" class="needs-attention"><span>실패</span><b id="message-count-failed">—</b></button>
+          <button type="button" data-message-status="unknown" class="needs-attention"><span>결과 미확인</span><b id="message-count-unknown">—</b></button>
+        </div>
+        <p class="help">집계는 선택한 기간·종목·수신자·신호 기준입니다. 발송 상태를 선택하면 아래 목록이 좁혀집니다. 재시도는 같은 발송 기록의 시도 횟수로 표시합니다.</p>
+        <p id="message-signal-scope" class="signal-scope" hidden><span id="message-signal-label"></span><button id="message-clear-signal" type="button">신호 제한 해제</button></p>
+        <section class="panel message-results" aria-labelledby="message-results-title">
+          <div class="panel-heading"><div class="message-view-tabs" aria-label="발송 이력 보기"><button type="button" data-message-view="signals" aria-pressed="true">매매 신호별</button><button type="button" data-message-view="deliveries" aria-pressed="false">개별 발송</button></div><div class="message-limit"><label for="message-limit">한 번에</label><select id="message-limit"><option value="50">50건</option><option value="100">100건</option><option value="200">200건</option></select></div></div>
+          <div class="message-result-caption"><h2 id="message-results-title">매매 신호별 결과</h2><span id="message-result-total">—</span><time id="message-as-of"></time></div>
+          <div class="table-scroll message-table-scroll" id="message-results"><p class="empty">발송 이력을 조회하세요.</p></div>
+          <div class="pagination message-pagination"><button id="message-first" type="button">맨 앞</button><button id="message-previous" type="button" disabled>이전</button><span id="message-page-label">—</span><button id="message-next" type="button" disabled>다음</button><button id="message-last" type="button">맨 뒤</button></div>
+        </section>
+        <p class="admin-footnote">최근 등록순 · 날짜는 신호 발생일의 한국 시간 기준입니다. 페이지 이동 중 새 기록은 목록에 끼어들지 않으며, 새로고침하면 포함됩니다. 접수 완료와 휴대전화 전달 완료는 서로 다른 상태입니다.</p>
+        <dialog id="message-detail"><div class="message-dialog-heading"><h2 id="message-detail-title">발송 상세</h2><button type="button" id="message-detail-close" aria-label="상세 닫기">닫기</button></div><div id="message-detail-body"></div></dialog>
+      </div>
     </section>
   </main>
 </body>
