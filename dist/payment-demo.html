@@ -17,7 +17,7 @@
   <div class="demo-bar"><span class="demo-dot"></span><strong>상품 체험</strong><span>가격·정보 구성은 논의용 예시입니다. 실제 결제와 문자 발송은 없습니다.</span></div>
   <header class="header">
     <a class="brand" href="payment-demo.html"><span class="brandmark">TM</span><span>TRADING MASTER<small>트레이딩 마스터</small></span></a>
-    <nav aria-label="페이지 메뉴"><a href="#products">상품 선택</a><a href="#account">내 이용권</a><button class="plain" id="share-link" type="button">링크 복사 <span aria-hidden="true">↗</span></button></nav>
+    <nav aria-label="페이지 메뉴"><a href="#products">등급 선택</a><a href="#account">내 이용권</a><button class="plain" id="share-link" type="button">링크 복사 <span aria-hidden="true">↗</span></button></nav>
   </header>
   <main id="main">
     <section class="intro" aria-labelledby="page-title">
@@ -27,19 +27,22 @@
     <div class="purchase-layout" id="products">
       <div class="product-column">
         <section aria-labelledby="tier-title">
-          <div class="section-heading"><span class="step">01</span><div><h2 id="tier-title">정보 등급을 선택하세요</h2><p>선별 기준과 분석 깊이가 다른 정보 묶음으로 가정했어요.</p></div></div>
+          <div class="section-heading"><span class="step">01</span><div><h2 id="tier-title">정보 등급을 선택하세요</h2><p>아래 기본·심화·프리미엄 중 하나를 눌러주세요.</p><p class="grade-selection-feedback" id="grade-selection-feedback" role="status" aria-live="polite">현재 선택: 기본</p></div></div>
           <div class="tier-grid" role="group" aria-label="정보 등급">
             <button class="tier-card selected" data-tier="basic" type="button" aria-pressed="true">
               <span class="tier-top"><span class="tier-icon" aria-hidden="true">Ⅰ</span><span class="choice-dot" aria-hidden="true"></span></span>
               <strong>기본</strong><span class="tier-sub">공통 전략의 기본 매매 정보</span><span class="tier-detail">표준 기준으로 선정한<br>종목의 매수·매도 신호</span><span class="tier-bottom">충전 10건 <b>10,000원</b></span>
+              <span class="tier-action">선택됨</span>
             </button>
             <button class="tier-card" data-tier="advanced" type="button" aria-pressed="false">
               <span class="tier-top"><span class="tier-icon" aria-hidden="true">Ⅱ</span><span class="choice-dot" aria-hidden="true"></span></span>
               <strong>심화</strong><span class="tier-sub">추가 기준을 적용한 선별 정보</span><span class="tier-detail">선별 조건과 분석을 더한<br>공통 매수·매도 신호</span><span class="tier-bottom">충전 40건 <b>100,000원</b></span>
+              <span class="tier-action">선택하기</span>
             </button>
             <button class="tier-card" data-tier="premium" type="button" aria-pressed="false">
               <span class="tier-top"><span class="tier-icon" aria-hidden="true">Ⅲ</span><span class="choice-dot" aria-hidden="true"></span></span>
               <strong>프리미엄</strong><span class="tier-sub">별도 핵심 전략의 전문 정보</span><span class="tier-detail">독자 전략과 심층 선별을<br>적용한 공통 매매 신호</span><span class="tier-bottom">충전 30건 <b>300,000원</b></span>
+              <span class="tier-action">선택하기</span>
             </button>
           </div>
           <p class="small-note">등급별 콘텐츠는 가정입니다. 상위 등급에 하위 등급 전체를 포함하지 않는 초안이며, 모든 등급의 발송 속도는 같습니다.</p>
