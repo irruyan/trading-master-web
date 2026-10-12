@@ -11,7 +11,7 @@
   <script defer src="admin-messaging.js"></script>
 </head>
 <body>
-  <header class="admin-header"><a class="admin-brand" href="admin.html"><span>TM</span><b>트레이딩 마스터 <small>운영 관리</small></b></a><div class="admin-header-actions"><a href="./" target="_blank" rel="noopener">베타 열기</a><button id="admin-logout" type="button" hidden>로그아웃</button></div></header>
+  <header class="admin-header"><a class="admin-brand" href="admin.html"><span>TM</span><b>트레이딩 마스터 <small>운영 관리</small></b></a><div class="admin-header-actions"><button id="admin-logout" type="button" hidden>로그아웃</button></div></header>
   <main>
     <section class="admin-login" id="admin-login"><div class="eyebrow">TRADING MASTER</div><h1>관리자 로그인</h1><p>관리자 계정으로 회원과 이용 기간을 관리하세요.</p><form id="admin-login-form"><label for="admin-phone">휴대폰 번호</label><input id="admin-phone" type="tel" autocomplete="username" placeholder="010-1234-5678" maxlength="30" required><label for="admin-password">비밀번호</label><input id="admin-password" type="password" autocomplete="current-password" maxlength="128" required><button class="primary" id="admin-login-submit" type="submit">관리자 로그인</button></form><p id="admin-login-message" class="feedback" role="status" aria-live="polite">로그인 정보를 확인하고 있습니다.</p><button id="admin-session-retry" type="button" hidden>다시 확인</button></section>
     <section id="admin-dashboard" hidden>
