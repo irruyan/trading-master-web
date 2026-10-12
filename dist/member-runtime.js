@@ -5,7 +5,7 @@
   const app = document.getElementById('app');
   const menu = document.getElementById('member-menu');
   const state = { ready: false, member: null, csrf: '', mode: '', expires: 0, error: '', busy: false, notice: '' };
-  const authPaths = new Set(['/login', '/signup', '/reset-password', '/change-phone', '/member', '/signals']);
+  const authPaths = new Set(['/login', '/signup', '/reset-password', '/change-phone', '/member', '/signals', '/notification-settings']);
   let verification = null, verificationTimer = null, sessionTimer = null, checking = null, lastCheck = 0, returnRoute = '/';
   let renderedKey = '', sessionEpoch = 0;
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
@@ -28,7 +28,7 @@
         body: data === undefined ? undefined : JSON.stringify(data)
       });
       const body = await response.json();
-      if (!response.ok) throw new Error(body.error || '잠시 후 다시 시도해 주세요.');
+      if (!response.ok) { const error=new Error(body.error || '잠시 후 다시 시도해 주세요.'); error.status=response.status; throw error; }
       return body;
     } catch (error) {
       if (error instanceof TypeError || error.name === 'AbortError') throw new Error('연결을 확인한 뒤 다시 시도해 주세요.');
@@ -40,6 +40,7 @@
     if (typeof result.csrf_token !== 'string' || !Number.isFinite(result.expires_at)) throw new Error('로그인 정보를 확인하지 못했습니다.');
     const previous = state.member;
     if (!result.member || previous?.id !== result.member.id) window.TRADING_MASTER_SIGNALS?.reset();
+    if (!result.member || previous?.id !== result.member.id || previous?.phone !== result.member.phone) window.TRADING_MASTER_NOTIFICATIONS?.reset();
     state.ready = true; state.member = result.member || null; state.csrf = result.csrf_token;
     state.expires = result.expires_at; state.mode = result.verification_mode; state.error = '';
     if (!state.member || previous?.id !== state.member.id) window.TRADING_MASTER_CLEAR_DATA?.();
@@ -63,7 +64,7 @@
     const epoch=sessionEpoch;
     checking = request('auth/session').then(result => {
       if (epoch!==sessionEpoch) return false;
-      const changed = !state.ready || state.member?.id !== result.member?.id || state.member?.phone !== result.member?.phone || subscriptionKey(state.member)!==subscriptionKey(result.member) || Boolean(state.error);
+      const changed = !state.ready || state.member?.id !== result.member?.id || state.member?.phone !== result.member?.phone || subscriptionKey(state.member)!==subscriptionKey(result.member) || JSON.stringify(state.member?.signal_sms)!==JSON.stringify(result.member?.signal_sms) || Boolean(state.error);
       applySession(result);
       if (changed) window.TRADING_MASTER_RENDER();
       if (canRead()) window.TRADING_MASTER_REFRESH?.();
@@ -74,6 +75,7 @@
       if (canRead()) return false;
       state.ready = false; state.member = null; state.error = error.message;
       window.TRADING_MASTER_SIGNALS?.reset();
+      window.TRADING_MASTER_NOTIFICATIONS?.reset();
       window.TRADING_MASTER_CLEAR_DATA?.(); window.TRADING_MASTER_RENDER();
       return false;
     }).finally(() => { checking = null; });
@@ -99,13 +101,21 @@
 
   function render(requested) {
     const route = requested.split('?')[0], locked = !canRead();
-    if (locked && (!authPaths.has(route) || route==='/signals')) returnRoute = requested;
+    if (locked && (!authPaths.has(route) || route==='/signals' || route==='/notification-settings')) returnRoute = requested;
     const handled = locked || authPaths.has(route);
     document.body.classList.toggle('member-locked', locked);
     document.body.classList.toggle('member-view', handled);
     document.body.classList.toggle('signal-view', !locked && route==='/signals');
     if (route!=='/signals') window.TRADING_MASTER_SIGNALS?.leave();
+    if (route!=='/notification-settings') window.TRADING_MASTER_NOTIFICATIONS?.leave();
     if (locked) window.TRADING_MASTER_SIGNALS?.reset();
+    if (locked) window.TRADING_MASTER_NOTIFICATIONS?.reset();
+    if (!locked && route==='/notification-settings') {
+      renderedKey=''; clearInterval(verificationTimer); verification=null;
+      if (window.TRADING_MASTER_NOTIFICATIONS) window.TRADING_MASTER_NOTIFICATIONS.render(state.member);
+      else app.innerHTML=frame('문자 알림 설정','알림 설정을 준비하고 있습니다.','');
+      return true;
+    }
     if (!locked && route==='/signals') {
       renderedKey=''; clearInterval(verificationTimer); verification=null;
       if (window.TRADING_MASTER_SIGNALS) window.TRADING_MASTER_SIGNALS.render(state.member);
@@ -113,7 +123,7 @@
       return true;
     }
     if (!handled) { renderedKey=''; clearInterval(verificationTimer); verification=null; return false; }
-    const key = [route, state.ready, state.member?.id, state.member?.phone, state.error,route==='/member'?subscriptionKey(state.member):''].join('|');
+    const key = [route, state.ready, state.member?.id, state.member?.phone, state.error,route==='/member'?subscriptionKey(state.member)+JSON.stringify(state.member?.signal_sms):''].join('|');
     // A quote refresh must not erase a code/password currently being entered.
     if (key===renderedKey && !state.notice) return true;
     renderedKey=key;
@@ -130,7 +140,8 @@
         (sub.start_date&&sub.end_date?'<div><dt>이용 기간</dt><dd id="member-subscription-period">'+escape(sub.start_date)+'<br>~ '+escape(sub.end_date)+'까지</dd></div>':'')+'</dl>';
       app.innerHTML = frame('내 계정', '가입 정보와 이용 상태를 확인하세요.', details+'<p class="member-help" id="member-subscription-help">'+escape(subscriptionCopy[sub.status]||'이용 상태를 다시 확인해 주세요.')+'</p>'+
         (sub.end_date?'<p class="member-help">표시된 종료일의 밤 12시까지 이용할 수 있습니다. (한국 시간)</p>':'')+
-        feedback()+'<a class="member-primary" href="#/signals">매수·매도 알림 내역</a><button type="button" class="member-secondary" data-member-action="refresh-subscription">이용 상태 새로고침</button><a class="member-secondary" href="#/">운용 화면 보기</a><a class="member-secondary" href="#/change-phone">휴대폰 번호 변경</a><a class="member-secondary" href="#/reset-password">비밀번호 재설정</a><button type="button" class="member-secondary" data-member-action="logout">로그아웃</button>');
+        '<p class="member-help" id="member-sms-summary">문자 수신 '+(state.member.signal_sms?.enabled?'켜짐':'꺼짐')+' · 앱 알림 확인과 별도 설정</p>'+
+        feedback()+'<a class="member-primary" href="#/signals">매수·매도 알림 내역</a><a class="member-secondary" href="#/notification-settings">문자 알림 설정</a><button type="button" class="member-secondary" data-member-action="refresh-subscription">이용 상태 새로고침</button><a class="member-secondary" href="#/">운용 화면 보기</a><a class="member-secondary" href="#/change-phone">휴대폰 번호 변경</a><a class="member-secondary" href="#/reset-password">비밀번호 재설정</a><button type="button" class="member-secondary" data-member-action="logout">로그아웃</button>');
     } else if (route === '/signup' || route === '/reset-password' || (route === '/change-phone' && canRead())) {
       const purpose = route === '/signup' ? 'signup' : route === '/change-phone' ? 'change_phone' : 'reset';
       const title = purpose==='signup'?'회원가입':purpose==='reset'?'비밀번호 찾기':'휴대폰 번호 변경';
@@ -241,6 +252,7 @@
     }
     else if (button.dataset.memberAction==='logout') {
       window.TRADING_MASTER_SIGNALS?.reset();
+      window.TRADING_MASTER_NOTIFICATIONS?.reset();
       sessionEpoch++;
       busy(true);
       try { applySession(await request('auth/logout', {})); go('/login'); }
@@ -251,7 +263,7 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden) checkSession(); });
   window.addEventListener('online', () => checkSession(true));
   window.addEventListener('pageshow', event => { if (event.persisted) checkSession(true); });
-  window.TRADING_MASTER_MEMBERS = Object.freeze({render, canRead, refresh:()=>checkSession(true)});
+  window.TRADING_MASTER_MEMBERS = Object.freeze({render, canRead, refresh:()=>checkSession(true), refreshAfterWrite:async()=>{if(checking)await checking;return checkSession(true);}, request, verificationMode:()=>state.mode});
   window.TRADING_MASTER_RENDER();
   checkSession(true);
 })();

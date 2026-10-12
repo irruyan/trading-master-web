@@ -61,6 +61,11 @@ try:
             page.get_by_role('button',name='이용 상태 새로고침',exact=True).click()
             expect(page.locator('#member-subscription-status')).to_have_text('이용 중')
             expect(page.locator('#member-subscription-period')).to_contain_text((today+timedelta(days=29)).isoformat())
+            page.get_by_role('link',name='문자 알림 설정',exact=True).click()
+            expect(page.locator('#sms-setting-status')).to_have_text('꺼짐')
+            page.locator('#sms-consent').check();page.locator('#sms-enable').click()
+            expect(page.locator('#sms-setting-status')).to_have_text('켜짐')
+            page.get_by_role('link',name='내 계정으로',exact=True).click()
             signal=sample_signal(datetime.fromtimestamp(now[0],timezone.utc))
             assert sms.ingest(signal)['recipient_count']==1
             admin.get_by_role('button',name='일시정지',exact=True).click()
@@ -84,6 +89,11 @@ try:
             page.locator('#member-submit').click()
             expect(page.locator('#member-subscription-status')).to_have_text('이용 중')
             expect(page.locator('.member-details')).to_contain_text('010-0000-0002')
+            page.get_by_role('link',name='문자 알림 설정',exact=True).click()
+            expect(page.locator('#sms-setting-status')).to_have_text('꺼짐')
+            page.locator('#sms-consent').check();page.locator('#sms-enable').click()
+            expect(page.locator('#sms-setting-status')).to_have_text('켜짐')
+            page.get_by_role('link',name='내 계정으로',exact=True).click()
             now[0]+=1
             assert sms.ingest(sample_signal(datetime.fromtimestamp(now[0],timezone.utc)))['recipient_count']==1
             assert len(sms.dispatch())==1 and gateway.calls[0]['phone']=='01000000002'

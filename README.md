@@ -188,7 +188,7 @@ described above; physical-device stock-chart interactions remain unverified.
 
 ## Customer signal history (development)
 
-With the matching v0.5 member runner and membership explicitly enabled,
+With the matching v0.6 member runner and membership explicitly enabled,
 `#/member` opens `#/signals`: date/name/code and buy/sell filters, 20-item cursor
 pages and a message detail dialog. The member server derives scope from the
 live session; there is no phone/member selector. Assigned old messages remain
@@ -208,3 +208,26 @@ Build with `node scripts/build-static.js`, then verify the matched checkouts:
 The script runs headless Chromium locally and never opens a user-facing preview
 or sends real SMS. Operational HTTPS/auth, production hosting, real providers,
 physical-device QA and packaging remain separate work.
+
+## Service SMS preferences (development)
+
+`#/member` links to `#/notification-settings`. SMS is off until the customer
+explicitly consents for their verified phone. Turning it off preserves app
+information allocations and the existing subscription. Re-enabling starts with
+new signals, and verified number changes require fresh consent. Already-claimed
+SMS processing may finish. The control is separate from subscription cancellation
+or any marketing-message signup; real delivery/terms/provider approval remain
+pending. No real SMS or payments are triggered by the browser tests.
+
+The server persists audited consent with an expected revision. Stale devices and
+uncertain POST results require a current GET before another change; the client
+does not retry writes automatically. New `member-notifications.js` joins the
+12-asset static shell, and preference/history APIs stay outside persistent
+storage/SW caching. Signal-history reentry always requests fresh assigned records,
+retaining prior results while loading. Default public-beta access stays open.
+
+Verify matched services with
+`TRADING_MASTER_ENGINE_ROOT=/path/to/trading-master-engine python tests/browser_notifications_check.py`.
+It checks explicit consent, opt-out/reconsent, app-only records, stale revisions,
+lost-response reconciliation, verified number change, late logout responses and
+mobile widths through local headless Chromium without a user-facing preview.

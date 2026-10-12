@@ -5,7 +5,7 @@
   const app=document.getElementById('app');
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const actions={buy:'매수',add_buy:'추가 매수',partial_sell:'일부 매도',sell:'매도'};
-  const statuses={queued:'문자 발송 대기',sending:'문자 발송 처리 중',accepted:'문자업체 접수',delivered:'문자 전달 완료',failed:'문자 발송 실패',unknown:'문자 결과 미확인',skipped:'문자 발송 제외',expired:'문자 발송 기한 종료'};
+  const statuses={queued:'문자 발송 대기',sending:'문자 발송 처리 중',accepted:'문자업체 접수',delivered:'문자 전달 완료',failed:'문자 발송 실패',unknown:'문자 결과 미확인',skipped:'문자 발송 제외',expired:'문자 발송 기한 종료',not_requested:'앱으로 제공',stopped:'문자 수신 중단'};
   const dateText=value=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value));
   const day=offset=>{
     const now=new Date(Date.now()+9*3600000+offset*86400000);
@@ -71,7 +71,7 @@
       const result=await request('?'+query,controller);
       if(id!==sequence||member!==owner||!readable())return;
       data=result;loadedAt=Date.now();filters={...result.filters};fillForm(filters);
-      element('signal-feedback').textContent=result.items.some(item=>item.mock)?'모의 발송 기록입니다. 실제 문자가 발송된 기록이 아닙니다.':'';
+      element('signal-feedback').textContent=result.items.some(item=>item.mock)?'모의 알림 기록입니다. 실제 문자가 발송된 기록이 아닙니다.':'';
     }catch(error){
       if(id!==sequence||member!==owner||!readable())return;
       if(error.status===401){reset();element('signal-feedback').textContent='로그인을 다시 확인하고 있습니다.';window.TRADING_MASTER_MEMBERS.refresh();return;}
@@ -102,7 +102,7 @@
     subscription=member.subscription?.status||'none';
     const entering=!element('signal-results');
     if(entering)shell();paint();
-    if(!loading&&(!data||entering&&Date.now()-loadedAt>30000))load();
+    if(!loading&&(!data||entering))load();
   }
   app.addEventListener('submit',event=>{
     if(event.target.id!=='signal-filter')return;

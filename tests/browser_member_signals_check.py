@@ -15,6 +15,7 @@ sys.path[:0]=[str(engine/'services/trading-master-members'),str(engine/'services
 from trading_master_members.administration import Administration,KST
 from trading_master_members.server import make_server
 from trading_master_members.service import MemberService,MockSms
+from trading_master_members.preferences import SmsPreferences,CONSENT_VERSION
 from trading_master_sms.audience import MemberAudience
 from trading_master_sms.demo import sample_signal
 from trading_master_sms.service import MessagingService
@@ -26,7 +27,9 @@ admin=Administration(members);admin.bootstrap('01000000090','test operator passw
 operator=members.login(phone='01000000090',password='test operator password',session=members.ensure_session()[0],client='fixture')
 def signup(phone):
     session=members.ensure_session()[0];code=members.request_code(phone=phone,purpose='signup',session=session,client='fixture')
-    return members.signup(phone=phone,password='test member password',challenge=code['challenge_id'],code=code['mock_code'],session=session)
+    member=members.signup(phone=phone,password='test member password',challenge=code['challenge_id'],code=code['mock_code'],session=session)
+    SmsPreferences(members).set(member,enabled=True,expected_version=0,consent=True,consent_version=CONSENT_VERSION)
+    return member
 member=signup('01000000001');other=signup('01000000002')
 today=datetime.fromtimestamp(now[0],KST).date()
 sms=MessagingService(Path(temp.name)/'sms.sqlite3',clock=lambda:datetime.fromtimestamp(now[0],timezone.utc),audience=MemberAudience(members.db_path))
