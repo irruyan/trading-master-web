@@ -299,3 +299,22 @@ consent paging, period edits, virtual delivery counts/pages/modals, reset/new-ta
 isolation, missing fixtures, mobile widths and zero real auth/admin API calls.
 The production page is shared via an external browser link; no side preview is
 opened. Existing beta account/watchlist and payment assets are byte-preserved.
+
+## Trial-aware admin preparation (2026-10-13)
+
+Admin lists and details distinguish operator-issued, paid and trial access. Current
+trial-active/trial-expired/paid-active shortcuts and kind/usage filters intersect
+existing status and SMS filters. End instants and the original trial interval are
+shown in KST to the second; access ends at the displayed instant. Trial usage
+survives conversion to another entitlement. Trial extension/reissuance is blocked.
+Paid is an operator classification, not proof of payment or a billing integration.
+
+The public `admin-demo.html` remains an isolated, in-memory fictional walkthrough
+with active, expired, paused and converted trial fixtures. The actual `admin.html`
+uses the development backend. Neither page grants trials on customer signup yet.
+No customer login gate, automatic renewal, real SMS or payment provider is enabled.
+
+Checks: `node --test tests/*.test.js`, `node scripts/build-static.js`, and headless
+`python tests/browser_admin_trial_check.py` with `TRADING_MASTER_ENGINE_ROOT`
+pointing to the matching development engine checkout. Existing admin/consent
+browser checks serve `build/site` and therefore need the static build first.

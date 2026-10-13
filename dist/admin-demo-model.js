@@ -31,8 +31,16 @@
         if(type===3)ends=today;if(type===6){starts=today+86400;ends=starts+30*86400;}
         if(type===4)state='paused';if(type===7)state='cancelled';
         const member={id:memberId(i),phone:'0105555'+String(i).padStart(4,'0'),role:'member',created_at:now-i*600,
-          subscription:exists?{product_code:PRODUCT.code,starts_at:starts,ends_at:ends,state,version:1}:null,
+          subscription:exists?{product_code:PRODUCT.code,kind:'manual',starts_at:starts,ends_at:ends,state,version:1}:null,
           sms:{enabled,updated_at:exists?now-86400:null},history:[],consents:[],index:i};
+        member.trial={used:false,starts_at:null,ends_at:null};
+        // Explicit fictional fixtures; constructing the demo never issues a real trial.
+        if([9,11,12,17].includes(i)){
+          const start=i===9||i===12?now-2*86400:now-12*86400,end=start+7*86400;
+          member.trial={used:true,starts_at:start,ends_at:end};
+          if(i===17)member.subscription.kind='paid';
+          else Object.assign(member.subscription,{kind:'trial',starts_at:start,ends_at:end});
+        }else if(exists&&i%10===0)member.subscription.kind='paid';
         if(exists)member.history.push({id:id(10000+i),action:'set_period',before:{},after:copy(member.subscription),note:'가상 회원의 샘플 이용 기간',created_at:now-2*86400,operator:mask(PHONE)});
         const count=i===1?47:i===8?3:exists?2:0;
         for(let v=1;v<=count;v++)member.consents.unshift({id:id(20000+i*100+v),enabled:v===count?enabled:Boolean(v%2),version:v,
@@ -59,9 +67,9 @@
     }
     memberView(member,full=false){
       const a=this.access(member),s=member.subscription;
-      const subscription=s?{status:a.status,state:s.state,product:PRODUCT,starts_at:s.starts_at,ends_at:s.ends_at,start_date:day(s.starts_at),end_date:day(s.ends_at-1),version:s.version}:
-        {status:'none',state:null,product:null,starts_at:null,ends_at:null,start_date:null,end_date:null,version:0};
-      return {id:member.id,[full?'phone':'phone_masked']:full?member.phone:mask(member.phone),role:member.role,created_at:member.created_at,subscription,
+      const subscription=s?{status:a.status,kind:s.kind||'manual',state:s.state,product:PRODUCT,starts_at:s.starts_at,ends_at:s.ends_at,start_date:day(s.starts_at),end_date:day(s.ends_at-1),version:s.version}:
+        {status:'none',kind:'none',state:null,product:null,starts_at:null,ends_at:null,start_date:null,end_date:null,version:0};
+      return {id:member.id,[full?'phone':'phone_masked']:full?member.phone:mask(member.phone),role:member.role,created_at:member.created_at,subscription,trial:copy(member.trial||{used:false,starts_at:null,ends_at:null}),
         access:{paid_signals:a.app},signal_sms:{enabled:member.sms.enabled,updated_at:member.sms.updated_at,state:a.state,app_ready:a.app,sms_ready:a.ready}};
     }
     detail(member){return {member:this.memberView(member,true),history:copy(member.history.slice(0,20))};}
@@ -76,11 +84,11 @@
         previous:offset>0?token(Math.max(0,offset-limit)):null,next:offset+limit<total?token(offset+limit):null,first:token(0),last:token(last)}};
     }
     listMembers(p){
-      const q=(p.get('q')||'').replace(/[\s()-]/g,'').replace(/^\+82/,'0').toLowerCase(),status=p.get('status')||'all',sms=p.get('sms')||'all',delivery=p.get('delivery')||'all';
-      if(q.length>80||!['all','none','scheduled','active','expired','paused','cancelled'].includes(status)||!['all','on','off'].includes(sms)||!['all','ready','app_only','inactive'].includes(delivery))throw new DemoError('검색 조건을 확인해 주세요.');
-      const all=this.members.map(m=>this.memberView(m)),summary={total:all.length,none:0,scheduled:0,active:0,expired:0,paused:0,cancelled:0,sms_ready:0,app_only:0};
-      for(const m of all){summary[m.subscription.status]++;if(m.signal_sms.sms_ready)summary.sms_ready++;if(m.signal_sms.state==='app_only')summary.app_only++;}
-      const rows=this.members.filter(m=>{const a=this.access(m);return (m.phone.includes(q)||m.id.includes(q))&&(status==='all'||a.status===status)&&(sms==='all'||m.sms.enabled===(sms==='on'))&&(delivery==='all'||a.state===delivery);});
+      const q=(p.get('q')||'').replace(/[\s()-]/g,'').replace(/^\+82/,'0').toLowerCase(),status=p.get('status')||'all',sms=p.get('sms')||'all',delivery=p.get('delivery')||'all',kind=p.get('kind')||'all',trial=p.get('trial_usage')||'all';
+      if(q.length>80||!['all','none','scheduled','active','expired','paused','cancelled'].includes(status)||!['all','on','off'].includes(sms)||!['all','ready','app_only','inactive'].includes(delivery)||!['all','none','manual','paid','trial'].includes(kind)||!['all','used','never'].includes(trial))throw new DemoError('검색 조건을 확인해 주세요.');
+      const all=this.members.map(m=>this.memberView(m)),summary={total:all.length,none:0,scheduled:0,active:0,expired:0,paused:0,cancelled:0,sms_ready:0,app_only:0,trial_active:0,trial_expired:0,paid_active:0};
+      for(const m of all){summary[m.subscription.status]++;if(m.signal_sms.sms_ready)summary.sms_ready++;if(m.signal_sms.state==='app_only')summary.app_only++;if(m.subscription.kind==='trial'&&m.subscription.status==='active')summary.trial_active++;if(m.subscription.kind==='trial'&&m.subscription.status==='expired')summary.trial_expired++;if(m.subscription.kind==='paid'&&m.subscription.status==='active')summary.paid_active++;}
+      const rows=this.members.filter(m=>{const a=this.access(m);return (m.phone.includes(q)||m.id.includes(q))&&(status==='all'||a.status===status)&&(sms==='all'||m.sms.enabled===(sms==='on'))&&(delivery==='all'||a.state===delivery)&&(kind==='all'||(m.subscription?.kind||'none')===kind)&&(trial==='all'||Boolean(m.trial?.used)===(trial==='used'));});
       const limit=this.integer(p.get('limit')||20,1,100),pages=Math.max(1,Math.ceil(rows.length/limit)),page=Math.min(this.integer(p.get('page')||1,1,100000),pages);
       return {members:rows.slice((page-1)*limit,page*limit).map(m=>this.memberView(m)),total:rows.length,limit,page,pages,summary,product:PRODUCT,as_of:this.clock()};
     }
@@ -92,13 +100,17 @@
     update(member,action,data){
       if(typeof data.expected_version!=='number'||!Number.isInteger(data.expected_version)||data.expected_version!==(member.subscription?.version||0))throw new DemoError('다른 화면에서 정보가 바뀌었습니다. 최신 정보를 불러와 주세요.',409);
       if(typeof (data.note||'')!=='string'||(data.note||'').length>300)throw new DemoError('변경 사유는 300자 이하로 입력해 주세요.');
-      const before=member.subscription?copy(member.subscription):{},now=this.clock();let sub=member.subscription?copy(member.subscription):{state:'enabled',version:0,product_code:PRODUCT.code};
+      const before=member.subscription?copy(member.subscription):{},now=this.clock();let sub=member.subscription?copy(member.subscription):{state:'enabled',version:0,product_code:PRODUCT.code,kind:'manual'};
       if(action==='subscription'){
+        if(data.kind!=null&&!['manual','paid'].includes(data.kind))throw new DemoError('관리자는 운영자 부여 또는 유료 이용권만 설정할 수 있습니다. 무료체험 재발급은 지원하지 않습니다.');
+        if(sub.kind==='trial'&&data.kind==null)throw new DemoError('무료체험 기간은 변경할 수 없습니다. 다른 이용권으로 전환하려면 종류를 선택해 주세요.',409);
+        sub.kind=data.kind||sub.kind;
         sub.starts_at=date(data.start_date);sub.ends_at=date(data.end_date)+86400;
         if(sub.ends_at<=sub.starts_at||sub.ends_at-sub.starts_at>3651*86400)throw new DemoError('이용 기간은 종료일 포함 최대 10년으로 입력해 주세요.');
       }else{
         if(!member.subscription)throw new DemoError('먼저 이용 기간을 설정해 주세요.',409);
         if(action==='extend'){
+          if(sub.kind==='trial')throw new DemoError('무료체험은 기간을 연장하거나 재시작할 수 없습니다.',409);
           if(typeof data.days!=='number'||!Number.isInteger(data.days)||data.days<1||data.days>3650)throw new DemoError('연장 일수는 1일부터 3650일까지 입력해 주세요.');
           if(sub.ends_at<=now){sub.starts_at=date(day(now));sub.ends_at=sub.starts_at+data.days*86400;}else sub.ends_at+=data.days*86400;
           if(Number(day(sub.ends_at-1).slice(0,4))>2100||sub.ends_at-sub.starts_at>3651*86400)throw new DemoError('이용 기간은 2100년 이내, 최대 10년으로 설정해 주세요.');

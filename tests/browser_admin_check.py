@@ -1,6 +1,7 @@
 """Admin HTTP/UI integration; fictional members, no SMS/payment, beta remains open."""
 from datetime import datetime, timedelta
 import json
+import os
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
@@ -9,7 +10,7 @@ from threading import Thread
 from playwright.sync_api import expect, sync_playwright
 
 root=Path(__file__).resolve().parent.parent
-sys.path.insert(0,"/workspace/trading-master-engine/services/trading-master-members")
+sys.path.insert(0,str(Path(os.environ.get("TRADING_MASTER_ENGINE_ROOT","/workspace/trading-master-engine"))/"services/trading-master-members"))
 from trading_master_members.administration import Administration,KST
 from trading_master_members.server import make_server
 from trading_master_members.service import MemberService,MockSms

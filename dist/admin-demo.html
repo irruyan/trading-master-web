@@ -15,12 +15,12 @@
   </script>
   <title>관리자 체험 · 트레이딩 마스터</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="admin.css?v=20261013-trial-admin-1">
   <link rel="stylesheet" href="admin-demo.css">
-  <script defer src="admin-demo-model.js?v=20261012-demo-route-1"></script>
-  <script defer src="admin-demo.js?v=20261012-demo-route-1"></script>
-  <script defer src="admin.js?v=20261012-demo-route-1"></script>
-  <script defer src="admin-messaging.js?v=20261012-demo-route-1"></script>
+  <script defer src="admin-demo-model.js?v=20261013-trial-admin-1"></script>
+  <script defer src="admin-demo.js?v=20261013-trial-admin-1"></script>
+  <script defer src="admin.js?v=20261013-trial-admin-1"></script>
+  <script defer src="admin-messaging.js?v=20261013-trial-admin-1"></script>
 </head>
 <body>
   <aside class="demo-banner"><strong>관리자 체험 · 가상 데이터</strong><span>새로고침하면 샘플 상태로 돌아갑니다. 실제 문자 발송·결제와 연결되지 않습니다.</span></aside>
@@ -30,9 +30,10 @@
     <section id="admin-dashboard" hidden>
       <nav class="admin-tabs" aria-label="운영 관리 메뉴"><button type="button" data-admin-tab="members" aria-current="page">회원 관리</button><button type="button" data-admin-tab="messaging">문자 발송 이력</button></nav>
       <div id="admin-members-pane">
-      <div class="page-heading"><div><div class="eyebrow">MEMBERSHIP</div><h1>회원·구독 관리</h1><p>이용 기간, 문자 수신 설정과 현재 제공 상태를 함께 확인합니다.</p></div><button id="admin-refresh" type="button">새로고침</button></div>
+      <div class="page-heading"><div><div class="eyebrow">MEMBERSHIP</div><h1>회원·구독 관리</h1><p>무료체험·유료 이용권, 종료 시각과 문자 제공 상태를 함께 확인합니다.</p></div><button id="admin-refresh" type="button">새로고침</button></div>
       <p id="admin-test-note" class="test-note" hidden>개발용 관리 화면입니다. 실제 문자 발송과 결제는 연결되지 않았습니다.</p>
       <div class="summary" aria-label="전체 회원 기준"><div><span>전체 회원</span><b id="count-total">—</b></div><div><span>이용 중</span><b id="count-active">—</b></div><div><span>만료</span><b id="count-expired">—</b></div><div><span>미등록</span><b id="count-none">—</b></div><button type="button" data-member-delivery="ready"><span>문자 수신 대상</span><b id="count-sms_ready">—</b><small>현재 이용 중 · 문자 켜짐</small></button><button type="button" data-member-delivery="app_only"><span>앱만 이용</span><b id="count-app_only">—</b><small>현재 이용 중 · 문자 꺼짐</small></button></div>
+      <div class="summary trial-summary" aria-label="이용권별 현황"><button type="button" data-member-kind="trial" data-member-status="active"><span>무료체험 이용 중</span><b id="count-trial_active">—</b><small>현재 체험권 · 클릭해 보기</small></button><button type="button" data-member-kind="trial" data-member-status="expired"><span>무료체험 만료</span><b id="count-trial_expired">—</b><small>현재 체험권 · 클릭해 보기</small></button><button type="button" data-member-kind="paid" data-member-status="active"><span>유료 이용 중</span><b id="count-paid_active">—</b><small>현재 유료권 · 클릭해 보기</small></button></div>
       <p id="admin-feedback" class="feedback" role="status" aria-live="polite"></p>
       <div class="admin-layout">
         <section class="member-list panel" aria-labelledby="members-title">
@@ -42,15 +43,17 @@
             <div><label for="member-status">이용 상태</label><select id="member-status"><option value="all">전체</option><option value="active">이용 중</option><option value="scheduled">시작 예정</option><option value="expired">만료</option><option value="none">미등록</option><option value="paused">일시정지</option><option value="cancelled">이용 중단</option></select></div>
             <div><label for="member-sms">문자 수신 설정</label><select id="member-sms"><option value="all">전체</option><option value="on">켜짐</option><option value="off">꺼짐</option></select></div>
             <div><label for="member-delivery">현재 제공 상태</label><select id="member-delivery"><option value="all">전체</option><option value="ready">앱 + 문자</option><option value="app_only">앱만 이용</option><option value="inactive">신규 제공 없음</option></select></div>
+            <div><label for="member-kind">이용권 종류</label><select id="member-kind"><option value="all">전체</option><option value="trial">무료체험</option><option value="paid">유료</option><option value="manual">운영자 부여</option><option value="none">미등록</option></select></div>
+            <div><label for="member-trial">무료체험 사용 이력</label><select id="member-trial"><option value="all">전체</option><option value="used">사용 이력 있음</option><option value="never">사용 이력 없음</option></select></div>
             <button type="submit">검색</button><button id="member-filter-reset" type="button">조건 초기화</button>
           </form>
           <p id="member-as-of" class="member-caption" role="status"></p>
-          <div class="table-scroll member-table-scroll"><table><thead><tr><th>회원</th><th>이용 상태</th><th>문자 / 제공 상태</th><th>이용 종료일</th><th><span class="sr-only">상세</span></th></tr></thead><tbody id="admin-members"><tr><td colspan="5">회원 정보를 불러오는 중입니다.</td></tr></tbody></table></div>
+          <div class="table-scroll member-table-scroll"><table><thead><tr><th>회원</th><th>이용 상태</th><th>문자 / 제공 상태</th><th>이용 종료 시각 · KST</th><th><span class="sr-only">상세</span></th></tr></thead><tbody id="admin-members"><tr><td colspan="5">회원 정보를 불러오는 중입니다.</td></tr></tbody></table></div>
           <div class="pagination"><button id="page-prev" type="button" disabled>이전</button><span id="page-label">1 / 1</span><button id="page-next" type="button" disabled>다음</button></div>
         </section>
         <section class="member-detail panel" aria-labelledby="detail-title"><div class="panel-heading"><h2 id="detail-title">회원 상세</h2><button id="detail-refresh" type="button" hidden>최신 정보 불러오기</button></div><div id="detail-empty" class="empty">목록에서 회원을 선택하세요.</div><div id="detail-content" hidden></div></section>
       </div>
-      <p class="admin-footnote">이용 날짜는 한국 시간 기준입니다. 이용 종료일은 해당 날짜를 포함합니다.</p>
+      <p class="admin-footnote">모든 시각은 한국 시간입니다. 표시된 종료 시각부터 새 알림 제공이 종료됩니다. 체험 사용 이력은 이용권 전환 후에도 남습니다.</p>
       </div>
       <div id="admin-messaging-pane" hidden>
         <div class="page-heading"><div><div class="eyebrow">MESSAGE HISTORY</div><h1>문자 발송 이력</h1><p>매매 신호별 결과부터 확인하고, 필요한 발송 기록을 찾아보세요.</p></div><button id="message-refresh" type="button" title="새 발송 기록을 포함해 조회합니다.">새로고침</button></div>
